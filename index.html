@@ -1,0 +1,1306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10151b"><meta name="description" content="Explore expression trees in a spatial interactive debugger. Edit expressions live and trace recursion.">
+<title>Expression Tree Studio | Spatial Debugger</title>
+<style>
+:root{color-scheme:dark;--bg:#0c1117;--surface:#131a22;--surface2:#18212b;--surface3:#1d2731;--line:#2a3540;--line-soft:#222d37;--ink:#e6e9eb;--secondary:#a0aab3;--muted:#73818d;--accent:#c6a47b;--teal:#8da8ad;--green:#a3bcae;--red:#d3a09a;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+*{box-sizing:border-box}html{min-width:320px}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.34;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible,.scene-wrapper:focus-visible{outline:2px solid var(--accent);outline-offset:3px}[hidden]{display:none!important}
+.topbar{min-height:70px;padding:0 clamp(22px,3.5vw,72px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:24px;background:#10161d}.identity{display:flex;align-items:center;gap:13px;white-space:nowrap}.identity-mark{display:grid;place-items:center;width:32px;height:32px;border:1px solid #697782;color:var(--accent);font-size:25px;line-height:1}.identity strong{font-size:12px;letter-spacing:1.4px;font-weight:750}.identity strong span{color:#a8b2bb;font-weight:530}.identity small{font-size:9px;letter-spacing:1.75px;color:var(--muted);display:block;margin-top:3px}.topright{display:flex;align-items:center;gap:20px}.context{font:10px var(--mono);letter-spacing:.5px;color:#72818d}.live-pill{font:10px var(--mono);letter-spacing:.5px;color:var(--secondary)}.live-pill i{display:inline-block;background:#80aa9a;height:6px;width:6px;border-radius:50%;vertical-align:middle;margin-right:7px;box-shadow:0 0 8px #80aa9a60}.quiet{color:#bcc6ce;background:transparent;border:1px solid #364451;border-radius:2px;padding:9px 12px}.quiet:hover{background:#202b36}.small{font-size:11px}.main{max-width:1660px;padding:30px clamp(18px,3.5vw,72px) 20px;margin:auto}.workspace-heading{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:18px}.section-index{font:10px var(--mono);letter-spacing:1.5px;color:var(--accent);margin:0 0 7px}.workspace-heading h1{font-size:clamp(20px,2.1vw,28px);font-weight:560;letter-spacing:-.7px;line-height:1.15;margin:0}.workspace-caption{font-size:11px;color:var(--muted);margin-bottom:3px}
+.editor{display:grid;grid-template-columns:minmax(0,1fr) 225px;border:1px solid var(--line);background:var(--surface);margin-bottom:14px}.editor-main{padding:14px 21px 12px;min-width:0}.editor label{font:10px var(--mono);color:var(--muted);letter-spacing:1.1px;display:block;margin-bottom:3px}.live-tag{font:9px var(--mono);color:#a4bcaf;letter-spacing:.7px;margin-left:8px}.editor input{width:100%;border:0;background:transparent;padding:2px 0;outline:none;font:500 clamp(23px,2.8vw,33px) var(--mono);color:#f0f0ec;letter-spacing:-1px;min-height:43px;caret-color:var(--accent)}.editor input:focus-visible{outline:none}.editor:focus-within{border-color:#698183}.editor-feedback{min-height:14px;font:10px var(--mono);color:#82968e;margin-top:3px}.editor-feedback.partial{color:var(--accent)}.editor-feedback.invalid{color:var(--red)}.editor-sample{border-left:1px solid var(--line);padding:20px 17px}.editor-sample select{width:100%;padding:9px 28px 9px 8px;color:#bdc8d0;background:#1c2630;border:1px solid #35434f;border-radius:2px;outline:none;font-size:11px}
+.visual-layout{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(290px,.8fr);gap:14px;align-items:stretch}.scene-panel,.analysis-panel,.execution{background:var(--surface);border:1px solid var(--line);min-width:0}.panel-top{height:45px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line-soft);padding:0 17px}.pane-title{display:flex;align-items:center;gap:11px;font:600 10px var(--mono);letter-spacing:1.15px;color:#c0ccd3;white-space:nowrap}.pane-num{font:10px var(--mono);color:#70828b}.pane-sub{font-size:9px;letter-spacing:0;color:#71818f;font-weight:400}.pane-tag{font:9px var(--mono);color:#748695;letter-spacing:.25px}.scene-panel{display:flex;flex-direction:column;min-height:550px}.scene-wrapper{position:relative;flex:1;min-height:420px;overflow:hidden;background:radial-gradient(ellipse at 52% 45%,#1b2731 0%,#141d25 52%,#111820 100%);touch-action:none;cursor:grab;user-select:none}.scene-wrapper.orbiting{cursor:grabbing}.scene-wrapper.node-dragging{cursor:grabbing}.scene-wrapper svg{width:100%;height:100%;position:absolute;inset:0;display:block;overflow:hidden;touch-action:none}.scene-crosshair{position:absolute;left:50%;top:50%;color:#a6a9ae20;font-size:16px;transform:translate(-50%,-50%);pointer-events:none}.scene-tools{position:absolute;right:17px;top:18px;display:flex;flex-direction:column;border:1px solid #425360;background:#121a23e8;z-index:2}.scene-tools button{width:33px;height:33px;background:transparent;color:#adbdc7;border:0;border-bottom:1px solid #2a3946;font-size:17px}.scene-tools button:last-child{border:0}.scene-tools button:hover{background:#26313d;color:#fff}.scene-axes{position:absolute;bottom:34px;right:19px;width:55px;height:48px;pointer-events:none;font:10px var(--mono);color:var(--muted)}.scene-axes:before{content:"";position:absolute;left:27px;top:23px;width:1px;height:24px;transform:rotate(29deg);background:#5f7980}.scene-axes:after{content:"";position:absolute;left:26px;top:22px;width:27px;height:1px;transform:rotate(-25deg);background:#a39b82}.scene-axes span{position:absolute}.axis-x{right:0;top:6px;color:#c3b494}.axis-y{left:18px;top:0;color:#b7bac5}.axis-z{left:1px;bottom:0;color:#86b6b4}.scene-help{font:9px var(--mono);color:#617481;position:absolute;bottom:20px;left:20px;pointer-events:none;letter-spacing:.6px}.scene-help span{margin:0 6px;color:#475965}.scene-bottom{min-height:49px;padding:0 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line-soft)}.legend{display:flex;gap:16px;flex-wrap:wrap}.legend span{font:9px var(--mono);color:#7f8d98;white-space:nowrap}.legend i{display:inline-block;vertical-align:middle;width:7px;height:7px;margin-right:6px;border-radius:50%}.legend-op{background:var(--accent)}.legend-val{background:#819ba8}.legend-active{background:#a4c8bd}.legend-ghost{border:1px dashed var(--accent)}.scene-steps{display:flex;gap:8px}.scene-steps button{font:10px var(--mono);color:#a8b6c0;background:transparent;border:1px solid #354450;padding:8px 10px;border-radius:2px;white-space:nowrap}.scene-steps button:hover:not(:disabled){background:#26313d}
+.analysis-column{display:grid;grid-template-rows:auto 1fr auto;gap:12px;min-width:0}.analysis-inner{padding:19px 20px 15px}.value-label,.compare-values small{font:10px var(--mono);letter-spacing:.7px;color:#7a8a97}.big-value{font:500 48px var(--mono);letter-spacing:-2px;line-height:1.15;margin:11px 0 4px;overflow-wrap:anywhere}.big-value.pending{color:#89969f}.big-value.invalid{font-size:29px;color:var(--red);letter-spacing:-.7px}.value-desc{font-size:10px;color:#768895}.separator{border-top:1px solid var(--line-soft);margin:20px 0 15px}.insight-grid{display:grid;grid-template-columns:minmax(0,1fr) 80px;gap:12px}.insight-grid div{min-width:0}.insight-grid span{font:9px var(--mono);letter-spacing:.5px;color:#7e8d98;display:block;margin-bottom:8px}.insight-grid strong{font:12px var(--mono);color:#c0cbd0;display:block;overflow-wrap:anywhere}.meaning-note{font-size:11px;color:var(--accent);line-height:1.4;margin:14px 0 0}.meaning-note.good{color:#8fb4a4}.meaning-note.neutral{color:#8797a3}.inspector-inner{padding:16px 19px;min-height:139px}.inspect-primary{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.inspect-primary b{font:500 25px var(--mono)}.inspect-kind{font:10px var(--mono);color:var(--muted)}.inspect-row{display:flex;justify-content:space-between;border-top:1px solid #293540;padding:7px 0;color:#8f9eaa;font:11px var(--mono)}.inspect-row strong{font-weight:500;color:#bfcad0}.inspect-actions{display:flex;gap:7px;margin-top:13px}.inspect-actions button{flex:1;min-width:0;color:#c7d0d2;background:#242f39;border:1px solid #3a4953;padding:9px 4px;border-radius:2px;font:10px var(--mono)}.inspect-actions button:hover:not(:disabled){background:#364450}.change-inner{padding:15px 18px 16px}.compare-values{display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr);gap:8px;align-items:center}.compare-values>div{min-width:0}.compare-values small{display:block;margin-bottom:6px}.compare-values strong{display:block;font:11px var(--mono);color:#d0d5d7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.compare-values span{font:18px var(--mono);display:block;margin-top:8px;color:var(--accent)}.compare-values b{color:#67808c;font:13px var(--mono)}#change-note{font:10px var(--mono);line-height:1.5;color:#8fa1ac;border-top:1px solid var(--line-soft);padding-top:9px;margin-top:11px}
+.execution{margin-top:14px}.execution-head{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:0 17px;min-height:58px;border-bottom:1px solid var(--line)}.execution-controls{display:flex;align-items:center;gap:6px}.execution-controls button{border:1px solid #374754;background:#1d2731;color:#b1bec8;font:11px var(--mono);min-width:30px;height:29px;border-radius:2px}.execution-controls button:hover:not(:disabled){background:#30404d}.execution-controls .trace-play{min-width:66px;background:#bd9c74;color:#101820;border-color:#bd9c74;font-weight:700}.execution-controls .trace-play:hover:not(:disabled){background:#d0ae85}.order-toggle{display:flex;margin-right:14px;border:1px solid #3a4854}.order-toggle button{border:0;border-right:1px solid #394751;border-radius:0;min-width:35px;background:transparent;font:10px var(--mono)}.order-toggle button:last-child{border:0}.order-toggle button.active{color:#f6e6cf;background:#5d4e3f}.step-count{font:10px var(--mono);color:#899ba7;min-width:62px;text-align:right}.timeline-bar{display:flex;align-items:center;gap:12px;padding:10px 17px;border-bottom:1px solid var(--line-soft)}.timeline-bar input{width:230px;max-width:35%;accent-color:#c6a47b;height:13px}.timeline-bar span{color:#8ca0ad;font:10px var(--mono);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.execution-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr)}.execution-cell{min-width:0;min-height:204px;padding:15px 17px}.execution-cell+.execution-cell{border-left:1px solid var(--line-soft)}.cell-header{font:10px var(--mono);color:#c9d0d4;letter-spacing:.75px;display:flex;justify-content:space-between;gap:8px}.cell-header span{color:#677e8b;font-size:9px;letter-spacing:0}.source-code{font:11px/1.9 var(--mono);color:#b9c4cc;margin-top:13px;white-space:pre;overflow:auto}.code-line{display:block;padding:0 7px;border-left:2px solid transparent}.code-line.on{background:#302c28;border-left-color:var(--accent);color:#f3dfc5}.ln{color:#657580;display:inline-block;width:21px}.code-token{color:#acb8c0}.stack-stage{padding:14px 8px 0;perspective:780px;min-height:151px}.stack-axis{font:9px var(--mono);color:#627988;letter-spacing:1px;margin-bottom:10px}.stack-axis span{color:var(--accent)}.stack-frames{transform-style:preserve-3d;position:relative;min-height:72px}.stack-card{width:min(93%,330px);display:flex;align-items:center;justify-content:space-between;gap:10px;color:#c5d1d8;background:linear-gradient(120deg,#293944,#22303a);border:1px solid #58707b;border-left:3px solid #85a9b0;padding:9px 12px;margin:0 0 6px 5px;min-height:35px;transform:rotateX(9deg) rotateY(-12deg);box-shadow:6px 6px 0 #121c25,8px 9px 12px #050a1044;text-align:left;animation:stack-in .15s ease both}.stack-card.active{border-left-color:#d1b089;border-color:#826e57;background:linear-gradient(120deg,#3f3c39,#302e30)}.stack-card strong{font:11px var(--mono);font-weight:500}.stack-card small{font:9px var(--mono);color:#94a8ae}.stack-empty{color:#728793;font:11px var(--mono);margin-top:21px}.output-tokens{display:flex;align-content:flex-start;align-items:flex-start;gap:7px;flex-wrap:wrap;min-height:76px;margin-top:19px}.output-token{display:inline-grid;place-items:center;min-width:27px;background:#25372f;color:#a8cbb7;font:12px var(--mono);padding:7px 8px;border:1px solid #3f5a50}.output-note{font-size:10px;line-height:1.65;color:#697c88;max-width:250px}.footer{display:flex;justify-content:space-between;gap:14px;padding-top:15px;font:10px var(--mono);letter-spacing:.5px;color:#637582}.footer span{font-family:var(--sans);letter-spacing:0}.toast{position:fixed;left:50%;bottom:19px;transform:translate(-50%,15px);background:#35434c;color:#ecf0ef;border:1px solid #576a74;padding:11px 17px;font:12px var(--sans);opacity:0;pointer-events:none;transition:.2s;z-index:10;max-width:90vw}.toast.show{opacity:1;transform:translate(-50%,0)}
+.node-group{cursor:pointer}.node-group.selected .node-outline{stroke:#f4d6a8;stroke-width:2.5}.node-group.active .node-outline{stroke:#acd7c8;stroke-width:2.8}.node-group.ghost{opacity:.73}.node-group.ghost .node-outline{stroke-dasharray:4 3}.scene-link{stroke:#758d99;stroke-width:2.2;stroke-linecap:round;opacity:.65}.scene-link.active{stroke:#c6a47b;opacity:1;stroke-width:3}.scene-grid{stroke:#577079;stroke-width:1;opacity:.17}.scene-axis-line{stroke:#8aa0aa;opacity:.21;stroke-width:1.5}@keyframes stack-in{from{opacity:.2;translate:0 -6px}to{opacity:1;translate:0 0}}
+@media(max-width:1270px){.visual-layout{grid-template-columns:minmax(0,1.6fr) minmax(285px,.85fr)}.pane-tag{display:none}.scene-panel{min-height:510px}.scene-wrapper{min-height:382px}.legend{gap:9px}.analysis-inner{padding:16px}.inspector-inner,.change-inner{padding:14px}.execution-cell{padding:13px}.execution-head{flex-wrap:wrap;padding:12px 15px}.execution-controls{flex-wrap:wrap}.topright .context{display:none}}
+@media(max-width:970px){.visual-layout{grid-template-columns:minmax(0,1fr)}.scene-panel{min-height:480px}.scene-wrapper{height:430px}.analysis-column{grid-template-columns:1fr 1fr;grid-template-rows:auto}.change-panel{grid-column:1/-1}.analysis-inner{min-height:260px}.analysis-column{gap:10px}.execution-grid{grid-template-columns:1fr 1fr}.output-cell{grid-column:span 2;border-top:1px solid var(--line-soft);border-left:none!important;min-height:125px}.footer{flex-wrap:wrap}}
+@media(max-width:640px){.topbar{min-height:58px;padding:10px 15px}.identity strong{font-size:10px}.identity small{font-size:8px;letter-spacing:.6px}.identity-mark{width:28px;height:28px}.live-pill{display:none}.topright{gap:8px}.quiet{padding:7px;font-size:10px}.main{padding:23px 13px}.workspace-caption{display:none}.workspace-heading h1{font-size:21px}.editor{grid-template-columns:1fr}.editor-main{padding:12px 13px}.editor-sample{border-left:0;border-top:1px solid var(--line);padding:10px 13px;display:flex;align-items:center;gap:12px}.editor-sample label{margin:0}.editor-sample select{max-width:220px}.editor input{font-size:23px}.scene-panel{min-height:430px}.scene-wrapper{min-height:360px}.scene-help{font-size:8px;left:10px;bottom:11px}.scene-bottom{padding:8px;flex-wrap:wrap;gap:8px}.legend{gap:10px}.scene-steps{margin-left:auto}.scene-steps button{padding:7px}.analysis-column{grid-template-columns:1fr}.analysis-inner{min-height:0}.change-panel{grid-column:auto}.execution-head{gap:12px}.execution-grid{grid-template-columns:1fr}.execution-cell{min-height:0;border-left:0!important;border-top:1px solid var(--line-soft)}.output-cell{grid-column:auto}.stack-stage{min-height:120px}.order-toggle{margin-right:4px}.execution-controls{gap:4px}.execution-controls button{min-width:28px}.timeline-bar input{max-width:38%;width:120px}.footer{font-size:9px}.pane-title{font-size:9px}.pane-sub{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Boot lifecycle. Never present hardcoded arithmetic as a live result. */
+.startup-status{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;
+  width:min(84%,440px);padding:24px 27px;background:#111a22ed;border:1px solid #425462;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none;box-shadow:0 14px 40px #0004}
+.startup-title{font:600 13px var(--sans);color:#dfe5e9}
+.startup-detail{font:11px/1.6 var(--mono);color:#92a3ac}
+.startup-status.startup-error{border-color:#b78d6c}
+.startup-status.startup-error .startup-title{color:#e8b68e}
+
+/* v3.2 P0: spatial interaction, direct editing, target feedback. */
+.scene-tools #fit-camera{font:600 10px var(--mono);letter-spacing:.2px;min-width:40px}
+.node-group .node-outline{transition:stroke .12s ease,stroke-width .12s ease,filter .12s ease}
+.node-group:hover .node-outline{stroke:#e2c9a7;stroke-width:2.6;filter:drop-shadow(0 0 5px #bd9c7444)}
+.node-group.drop-valid .node-outline{stroke:#cfdece;stroke-width:4;filter:drop-shadow(0 0 9px #8fbaad88)}
+.drag-preview{position:absolute;z-index:5;max-width:195px;border:1px solid #7d6a5d;background:#171e26f0;
+  color:#acb7bf;padding:9px 11px;font:10px/1.4 var(--mono);pointer-events:none;box-shadow:0 6px 20px #0007}
+.drag-preview.allowed{border-color:#8dac9b;color:#d0e8d8;background:#1b2c2af2}
+.node-editor{position:absolute;z-index:6;width:212px;min-height:150px;background:#111922f6;
+  border:1px solid #70848b;box-shadow:0 15px 34px #000a;padding:13px 13px 12px;user-select:text;cursor:default}
+.node-editor label{display:block;margin:0 0 9px;font:10px var(--mono);letter-spacing:.7px;color:#b8c8cd}
+.node-editor input,.node-editor select{display:block;width:100%;height:34px;background:#1b2731;border:1px solid #587079;color:#f0f2f3;
+  border-radius:1px;padding:5px 8px;font:17px var(--mono);outline:none}
+.node-editor input:focus,.node-editor select:focus{border-color:#d0ac83}
+.node-editor small{display:block;min-height:23px;font:9px/1.45 var(--mono);color:#9dafa9;margin:8px 0 4px}
+.node-editor small.error{color:#d7a298}
+.node-edit-actions{display:flex;gap:7px;margin-top:7px}
+.node-edit-actions button{flex:1;padding:7px;border:1px solid #4f6470;background:#26343d;color:#e3e8eb;
+  font:10px var(--mono);border-radius:1px}
+.node-edit-actions button:first-child{background:#b69776;color:#121920;border-color:#b69776;font-weight:700}
+.inspect-actions{flex-wrap:wrap}
+.inspect-actions button{font-size:9px;flex-basis:26%}
+@media(max-width:640px){.scene-tools #fit-camera{min-width:35px}.scene-help{max-width:72%;line-height:1.4}.node-editor{width:204px}}
+.preview-scene{pointer-events:none!important;z-index:2;opacity:.76}
+.preview-scene line{stroke:#a1d6c5;stroke-width:2;stroke-dasharray:7 5;opacity:.75}
+.preview-scene circle{fill:#8dc5b510;stroke:#94c4b5;stroke-width:2;stroke-dasharray:5 4}
+.preview-scene text{font:10px var(--mono);fill:#c5e9de;letter-spacing:.4px}
+
+/* v3.3 P1: place changed meaning in the existing scene and unify analysis. */
+.semantic-overlay{pointer-events:none!important;z-index:1;opacity:.95}
+.semantic-old-edge{stroke:#6b91a2;stroke-width:2;stroke-dasharray:6 6;opacity:.23}
+.semantic-old-edge.removed{stroke:#d0ab7a;stroke-width:3;stroke-dasharray:7 5;opacity:.82}
+.semantic-old-node{fill:#92a9b00e;stroke:#92a9b0;stroke-dasharray:3 5;stroke-width:1.7;opacity:.65}
+.semantic-overlay text{font:10px var(--mono);fill:#8fabb7;letter-spacing:.35px}
+.semantic-overlay text.semantic-caption{fill:#c7a77d;letter-spacing:.75px}
+.scene-link.call-path{stroke:#8cbaa9;stroke-width:3.6;opacity:.9}
+.scene-link.new-link:not(.call-path){stroke:#d7ab77;stroke-width:3.5;opacity:1}
+.analysis-column{display:grid;grid-template-rows:auto 1fr;align-content:stretch}
+.inspector-panel{display:flex;flex-direction:column}
+.inspector-inner{flex:1}
+.inspector-subtree strong{color:#c5d4c9}
+.inspector-expression{font:11px/1.45 var(--mono);color:#b0c3cc;overflow-wrap:anywhere;max-height:40px;overflow:auto;padding:2px 0 10px}
+.inspector-panel .change-panel{border-top:1px solid var(--line);background:#151d26}
+.inspector-panel .change-panel .panel-top{height:35px;padding:0 14px}
+.inspector-panel .change-panel .change-inner{padding:12px 14px 14px}
+.inspector-panel .change-panel .pane-title{font-size:9px;color:#8e9da9}
+.diff-toggle{border:1px solid #5a656c;background:#202a33;color:#b7d1c6;font:9px var(--mono);padding:5px 8px;white-space:nowrap}
+.diff-toggle[aria-pressed="true"]{color:#e8cfad;border-color:#8b7559;background:#3a312b}
+.diff-legend{color:#9bb6bc;font:9px/1.4 var(--mono);margin-top:8px}
+.stack-axis{display:flex;align-items:center;gap:7px}
+.stack-phase{margin-left:auto;color:#c9a984!important;border:1px solid #554537;padding:2px 5px;font:9px var(--mono)}
+.stack-card{transition:margin-left .19s ease,background-color .19s ease,border-color .19s ease;animation:none}
+.stack-card.entering{animation:stack-arrival .28s cubic-bezier(.22,.75,.31,1) both}
+@keyframes stack-arrival{from{opacity:0;transform:translateY(-13px) scale(.98) rotateX(9deg) rotateY(-12deg)}to{opacity:1;transform:translateY(0) scale(1) rotateX(9deg) rotateY(-12deg)}}
+.stack-event{margin-top:12px;padding:8px 11px;border-left:2px solid #3e515c;background:#18232d;color:#90a6b0;font:10px/1.6 var(--mono);min-height:33px}
+.stack-event.phase-enter{border-color:#8cae9d;color:#bad9c8}
+.stack-event.phase-return{border-color:#c6a47b;color:#e0c9ab;animation:stack-return .3s ease both}
+.stack-event.phase-print{border-color:#8eabb2;color:#b7d4d8}
+@keyframes stack-return{from{opacity:.35;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:970px){.analysis-column{grid-template-columns:1fr 1fr;grid-template-rows:auto}.inspector-panel .change-panel{margin-top:auto}}
+@media(max-width:640px){.analysis-column{grid-template-columns:1fr}.inspector-inner{min-height:0}.stack-event{font-size:9px}}
+
+@media(max-width:640px){.semantic-caption{display:none}}
+
+.stack-stage{position:relative}
+.stack-exits{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:3}
+.stack-departure{position:absolute;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:35px;padding:9px 12px;border:1px solid #a17e60;border-left:3px solid #d0ad84;color:#e4d2bc;background:#423a34;text-align:left;animation:stack-depart .32s ease-in both;white-space:nowrap}
+.stack-departure strong{font:11px var(--mono)}.stack-departure small{font:9px var(--mono);color:#b7a794}
+@keyframes stack-depart{from{opacity:.85;transform:translateY(0) scale(1) rotateX(9deg) rotateY(-12deg)}to{opacity:0;transform:translateY(23px) scale(.96) rotateX(18deg) rotateY(-12deg)}}
+@media(prefers-reduced-motion:reduce){.stack-departure{animation:none;display:none}}
+
+/* v3.4 · Clarity pass. No new learning modes, no extra panels. */
+:root{--bg:#0c1218;--surface:#131c25;--surface2:#192530;--line:#2b3945;--line-soft:#26333e;--ink:#eaf0f2;--secondary:#aebdc7;--muted:#90a1ad;--accent:#d1aa7d}
+body{font-size:14px;line-height:1.48}
+.topbar{min-height:59px;padding:0 clamp(18px,3vw,48px);background:#0e161d}
+.identity{gap:11px}.identity-mark{height:29px;width:29px;font-size:22px;border-color:#546675}
+.identity strong{font:600 13px var(--sans);letter-spacing:-.1px}
+.identity strong span{font-weight:500;color:#e1e8eb}.identity small,.context{display:none}
+.topright{gap:13px}.live-pill{font:500 11px var(--sans);color:#91a99f}
+.live-pill i{width:5px;height:5px;box-shadow:none}
+.quiet{padding:8px 12px;border-radius:5px}
+.main{padding:23px clamp(18px,3vw,48px) 20px;max-width:1800px}
+.workspace-heading{align-items:center;margin-bottom:13px}
+.workspace-heading h1{font-size:clamp(21px,2vw,27px);font-weight:550;letter-spacing:-.75px}
+.workspace-caption{font:500 11px var(--sans);color:#8e9fab;letter-spacing:.1px}
+.editor{margin-bottom:12px;border-radius:6px;overflow:hidden;background:#141e27}
+.editor-main{padding:13px 20px 10px}.editor label{font:600 11px var(--sans);letter-spacing:.1px;color:#b2c0c9;margin-bottom:2px}
+.live-tag{font:500 10px var(--sans);letter-spacing:.1px;color:#8fb8a8}
+.editor input{font-size:clamp(25px,2.55vw,33px);min-height:39px;padding:1px 0}
+.editor-feedback{font:11px var(--sans);min-height:14px;color:#8aa99e}
+.editor-sample{padding:17px 16px}.editor-sample select{font-size:12px;border-radius:5px;padding:8px 27px 8px 10px}
+.visual-layout{grid-template-columns:minmax(0,7fr) minmax(300px,3fr);gap:12px}
+.scene-panel,.analysis-panel,.execution{border-radius:6px;overflow:hidden;border-color:#32414b}
+.panel-top{height:47px;padding:0 19px}
+.pane-title{font:600 13px var(--sans);color:#e1e9ed;letter-spacing:-.1px;gap:10px}
+.pane-num{display:none}.pane-sub{font:400 11px var(--sans);color:#8497a4;letter-spacing:0}
+.pane-tag{font:500 10px var(--sans);color:#8296a2;letter-spacing:0}
+.scene-panel{min-height:544px}.scene-wrapper{min-height:440px;background:radial-gradient(ellipse at 49% 44%,#1c2933 0%,#151f28 61%,#111a23 100%)}
+.scene-crosshair{display:none}.scene-grid{opacity:.09}.scene-axis-line{opacity:.14}
+.scene-axes{opacity:.65;right:20px;bottom:31px}
+.scene-tools{right:14px;top:14px;border-radius:5px;overflow:hidden;border-color:#435461}
+.scene-tools button{width:37px;height:37px;color:#d2dee5}
+.scene-help{font:500 10px var(--sans);letter-spacing:0;color:#8198a6;bottom:15px;left:17px}
+.scene-help span{margin:0 5px;color:#68808e}
+.scene-bottom{min-height:46px;padding:0 16px}.legend span{font:500 10px var(--sans);color:#91a5b0}
+.scene-steps button{border-radius:4px;font:500 11px var(--sans);padding:6px 11px}
+.scene-link{stroke:#8da3b0;stroke-width:2.2;opacity:.42;transition:opacity .14s ease,stroke .14s ease}
+.scene-link.related{opacity:.84;stroke:#a5b8c3}.scene-link.active,.scene-link.call-path{opacity:1}
+.scene-link.new-link:not(.call-path){stroke:#d7aa7a;opacity:.96}
+.node-group{opacity:.68;transition:opacity .16s ease}
+.node-group.related{opacity:.91}.node-group.selected,.node-group.active,.node-group:hover{opacity:1}
+.node-group:not(.selected):not(.active):not(:hover) .node-id{opacity:0}
+.node-id{transition:opacity .15s ease}
+.node-group .node-outline{filter:none}.node-group.selected .node-outline{stroke:#f0cda0;stroke-width:2.8;filter:drop-shadow(0 0 5px #e0b78528)}
+.node-group.active .node-outline{stroke:#bddbcf}
+/* One cohesive right-side inspector: a result, selected context, optional comparison. */
+.analysis-column{display:block;min-width:0}
+.analysis-column>.analysis-panel{height:100%;display:flex;flex-direction:column;min-height:0}
+.analysis-inner{padding:19px 22px 18px;min-height:0}
+.value-label{font:600 11px var(--sans);letter-spacing:0;color:#9baeb9}
+.result-row{display:flex;align-items:baseline;gap:13px;min-height:68px}
+.big-value{margin:5px 0 1px;font:500 56px/1.12 var(--mono);letter-spacing:-2px;color:#edf0f1}
+.big-value.invalid{font-size:25px;letter-spacing:-.2px;line-height:2}
+.value-desc{font:11px var(--sans);color:#8298a5;line-height:1.4}
+.separator{margin:11px 0 13px}
+.insight-grid{grid-template-columns:minmax(0,1fr) 88px;gap:11px}
+.insight-grid span{font:500 10px var(--sans);letter-spacing:0;color:#90a2ae;margin-bottom:4px}
+.insight-grid strong{font:12px/1.55 var(--mono);color:#d4dde1}
+.meaning-note{font:11px/1.55 var(--sans);color:#d7b48a;margin:11px 0 0}
+.meaning-note.good{color:#94bcab}.meaning-note.neutral{color:#a0b2bc}
+.node-section{border-top:1px solid var(--line);padding:0}
+.node-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 22px 0}
+.node-section-head>span:first-child{font:600 12px var(--sans);color:#d4e0e5}
+.node-section-head .hint{font:500 10px var(--sans);color:#7f929e;text-align:right}
+.inspector-inner{padding:11px 22px 17px;min-height:0;flex:none}
+.inspect-primary{margin-bottom:7px}.inspect-primary b{font:500 23px var(--mono)}
+.inspect-kind{font:500 10px var(--sans);color:#98acb8}
+.inspect-row{font:11px/1.5 var(--sans);padding:6px 0;color:#8da2ad;border-color:#2c3a44}
+.inspect-row strong{font:500 11px var(--mono);color:#d1dce2;text-align:right}
+.inspector-expression{font:12px/1.5 var(--mono);color:#b7d0d8;max-height:40px;padding:1px 0 9px}
+.inspect-actions{margin-top:10px;gap:7px}
+.inspect-actions button{font:500 11px var(--sans);border-radius:4px;padding:9px 4px;background:#243440}
+.inspect-actions button:hover:not(:disabled){background:#304655}
+.inspector-panel .change-panel{margin-top:auto;border-top:1px solid var(--line);background:#18232d}
+.inspector-panel .change-panel[hidden]{display:none!important}
+.inspector-panel .change-panel .panel-top{height:36px;padding:0 21px}
+.inspector-panel .change-panel .pane-title{font:600 11px var(--sans);color:#bbcbd4}
+.inspector-panel .change-panel .change-inner{padding:12px 21px 15px}
+.compare-values small{font:500 10px var(--sans);letter-spacing:0}
+.compare-values strong{font-size:11px}.compare-values span{font-size:16px;margin-top:4px}
+.diff-toggle{font:500 10px var(--sans);padding:5px 8px;border-radius:3px}
+#change-note{font:11px/1.45 var(--sans);color:#a3b6c1}
+.diff-legend{font:10px/1.4 var(--sans)}
+/* Keep playback accessible while hiding detailed source/stack/output on first load. */
+.execution{margin-top:12px}.execution-head{min-height:51px;padding:6px 16px;gap:12px}
+.execution-controls{gap:5px;min-width:0}
+.execution-controls button{height:31px;font-size:11px;border-radius:4px}
+.execution-controls .trace-details{min-width:95px;margin-right:9px;font:500 11px var(--sans);color:#c9d6dd;background:transparent}
+.execution-controls .trace-details[aria-expanded="true"]{color:#f0d5b3;border-color:#7c6753}
+.execution-controls .trace-play{background:#c7a47b;border-color:#c7a47b}
+.execution-grid[hidden]{display:none!important}
+.timeline-bar{padding:8px 17px;min-height:36px}
+.timeline-bar span{font:11px var(--sans);color:#a6b8c3}
+.timeline-bar input{height:16px}
+.cell-header{font:600 12px var(--sans);letter-spacing:0;color:#e0e6e8}
+.cell-header span{font:500 10px var(--sans);color:#849cab}
+.execution-cell{min-height:175px;padding:14px 17px}
+.source-code{font-size:11.5px;line-height:1.75;margin-top:10px}
+.stack-stage{min-height:132px;padding-top:11px}
+.stack-event{font:11px/1.45 var(--sans)}
+.output-tokens{min-height:62px;margin-top:13px}
+.output-note{font:11px/1.45 var(--sans);max-width:260px}
+.footer{padding-top:14px;color:#718794;font:500 10px var(--sans);letter-spacing:0}
+@media(max-width:1270px){.visual-layout{grid-template-columns:minmax(0,1.65fr) minmax(295px,.85fr)}.scene-panel{min-height:516px}.scene-wrapper{min-height:400px}.analysis-inner{padding:17px}.node-section-head{padding:12px 17px 0}.inspector-inner{padding:9px 17px 14px}.inspector-panel .change-panel .change-inner{padding:11px 17px}}
+@media(max-width:970px){.visual-layout{grid-template-columns:minmax(0,1fr)}.scene-panel{min-height:475px}.scene-wrapper{height:430px}.analysis-column{display:block}.analysis-column>.analysis-panel{display:block}.analysis-inner{min-height:0}.execution-grid{grid-template-columns:1fr 1fr}.node-section-head{padding:12px 20px 0}.inspector-inner{padding:9px 20px 15px}}
+@media(max-width:640px){.topbar{min-height:55px;padding:9px 15px}.main{padding:19px 13px 16px}.workspace-heading{margin-bottom:12px;gap:6px}.workspace-heading h1{font-size:21px}.workspace-caption{display:none}.editor-main{padding:10px 13px}.editor-sample{padding:9px 13px}.editor input{font-size:23px}.scene-panel{min-height:418px}.scene-wrapper{min-height:352px}.scene-bottom{padding:8px 11px}.scene-help{font-size:10px;line-height:1.45;max-width:70%;bottom:12px}.pane-title{font-size:12px}.panel-top{padding:0 14px;height:42px}.analysis-inner{padding:16px}.node-section-head{padding:11px 16px 0}.inspector-inner{padding:9px 16px 14px}.inspector-panel .change-panel .panel-top{padding:0 16px}.inspector-panel .change-panel .change-inner{padding:10px 16px 14px}.big-value{font-size:49px}.execution-head{padding:10px 11px;gap:9px;flex-wrap:wrap}.execution-controls{flex-wrap:wrap;justify-content:flex-start}.execution-controls .trace-details{margin-right:6px}.execution-grid{grid-template-columns:1fr}.timeline-bar{padding:7px 11px}.timeline-bar input{max-width:38%;width:115px}.footer{font-size:10px;gap:5px}}
+
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="identity"><span class="identity-mark" aria-hidden="true">⟠</span><div><strong>Expression <span>Tree Studio</span></strong></div></div>
+    <div class="topright"><span class="live-pill"><i></i> Local</span><button id="reset-all" class="quiet small">Reset experiment</button></div>
+  </header>
+  <main class="main">
+    <div class="workspace-heading"><h1>See how structure changes meaning.</h1><span class="workspace-caption">Edit · Rotate · Trace</span></div>
+    <section class="editor" aria-label="Live expression editor">
+      <div class="editor-main"><label for="expression-input">Expression <span class="live-tag">Live</span></label>
+        <input id="expression-input" data-testid="expression-input" autocomplete="off" spellcheck="false" maxlength="500" inputmode="text" value="8 - (3 - 1)" aria-describedby="input-status" />
+        <div id="input-status" class="editor-feedback" role="status" aria-live="polite">Live tree enabled. Operators: + − × ÷</div>
+      </div>
+      <div class="editor-sample"><label for="example-picker">Example</label><select id="example-picker" aria-label="Choose an example"><option value="8 - (3 - 1)">Nested subtraction</option><option value="2 + 3 * 4">Operator precedence</option><option value="24 / (6 - 2)">Division / grouping</option><option value="(7 - 2) * (3 + 1)">Two subtrees</option></select></div>
+    </section>
+    <section class="visual-layout">
+      <div class="scene-panel" aria-label="Spatial expression tree">
+        <div class="panel-top"><div class="pane-title">Expression Tree <span class="pane-sub" id="node-count">INITIALIZING</span></div><div class="pane-tag" id="scene-mode">3D · Interactive</div></div>
+        <div class="scene-wrapper" id="scene-wrapper" tabindex="0" aria-label="Three-dimensional expression tree. Drag background to orbit, scroll to zoom, click nodes to inspect. Arrow keys rotate the camera." data-testid="scene-wrapper">
+          <svg id="scene" viewBox="0 0 1000 570" role="img" aria-label="Interactive spatial tree with projected depth and rotatable camera"></svg>
+          <svg id="semantic-overlay" class="semantic-overlay" viewBox="0 0 1000 570" aria-hidden="true" hidden></svg>
+          <svg id="preview-scene" class="preview-scene" viewBox="0 0 1000 570" aria-hidden="true"></svg>
+          <div id="startup-status" class="startup-status" role="status" aria-live="polite"><strong class="startup-title">Initializing the interactive tree</strong><span class="startup-detail">If the diagram does not load, use the self-contained index.html. No other files or server are required.</span></div>
+          <div id="drag-preview" class="drag-preview" hidden role="status" aria-live="off"><span id="drag-message">Drop to rotate</span></div>
+          <div id="node-editor" class="node-editor" hidden role="group" aria-label="Edit selected tree node">
+            <label for="node-edit-value" id="node-edit-label">NODE VALUE</label>
+            <input id="node-edit-value" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="12" aria-describedby="node-edit-error" />
+            <select id="node-edit-operator" aria-label="Operator" hidden><option value="+">+</option><option value="-">−</option><option value="*">×</option><option value="/">÷</option></select>
+            <small id="node-edit-error" role="status">Enter to apply · Esc to cancel</small>
+            <div class="node-edit-actions"><button id="node-edit-done" type="button">DONE</button><button id="node-edit-cancel" type="button">CANCEL</button></div>
+          </div>
+          <div class="scene-crosshair">+</div>
+          <div class="scene-tools" aria-label="3D camera controls"><button id="zoom-in" title="Zoom in" aria-label="Zoom in">＋</button><button id="zoom-out" title="Zoom out" aria-label="Zoom out">−</button><button id="fit-camera" title="Fit tree to view (F)" aria-label="Fit tree to view">FIT</button><button id="reset-camera" title="Reset view (0)" aria-label="Reset 3D view">↺</button></div>
+          <div class="scene-axes" aria-hidden="true"><span class="axis-x">X</span><span class="axis-y">Y</span><span class="axis-z">Z</span></div>
+          <div class="scene-help">Drag to orbit <span>·</span> Double-click a node to edit <span>·</span> Drag an operator to rotate</div>
+        </div>
+        <div class="scene-bottom"><div class="legend"><span><i class="legend-op"></i> Operator</span><span><i class="legend-val"></i> Operand</span><span><i class="legend-active"></i> Active call</span><span><i class="legend-ghost"></i> Incomplete input</span></div><div class="scene-steps"><button id="undo" title="Undo (Cmd/Ctrl+Z)" aria-label="Undo">↶ Undo</button><button id="redo" title="Redo (Cmd/Ctrl+Shift+Z)" aria-label="Redo">↷ Redo</button></div></div>
+      </div>
+      <aside class="analysis-column" aria-label="Inspector and expression evaluation">
+        <div class="analysis-panel inspector-panel">
+          <div class="panel-top"><div class="pane-title">Inspector</div><span class="pane-tag" id="evaluation-status">INITIALIZING</span></div>
+          <div class="analysis-inner">
+            <div class="value-label">Expression value</div>
+            <div class="result-row"><div id="expression-value" class="big-value" data-testid="expression-value">—</div><div id="value-message" class="value-desc">Initializing calculation…</div></div>
+            <div class="separator"></div>
+            <div class="insight-grid"><div><span>Raw inorder</span><strong id="raw-inorder">—</strong></div><div><span>Raw value</span><strong id="raw-inorder-value">—</strong></div></div>
+            <p id="meaning-note" class="meaning-note">Calculating…</p>
+          </div>
+          <div class="node-section"><div class="node-section-head"><span>Selected node</span><span class="hint">Click a node to inspect</span></div>
+            <div id="inspector" class="inspector-inner" aria-live="polite">Initializing node inspector…</div>
+          </div>
+          <div class="change-panel" id="change-panel" hidden>
+            <div class="panel-top"><div class="pane-title">Structural change</div><button id="diff-toggle" class="diff-toggle" aria-pressed="false" disabled>Ghost view</button></div>
+            <div class="change-inner"><div class="compare-values"><div><small>Before</small><strong id="before-expression">8 - (3 - 1)</strong><span id="before-value">6</span></div><b>→</b><div><small>Now</small><strong id="after-expression">8 - (3 - 1)</strong><span id="after-value">6</span></div></div><div id="change-note">Make an edit or rotate an operator to compare states.</div><div id="diff-legend" class="diff-legend" hidden>Dashed edges: previous structure · Solid amber: new connections</div></div>
+          </div>
+        </div>
+      </aside>
+    </section>
+    <section class="execution" aria-label="Recursive execution debugger">
+      <div class="execution-head"><div class="pane-title">Execution Trace <span class="pane-sub">Java recursion</span></div>
+      <div class="execution-controls"><button id="trace-details" class="trace-details" type="button" aria-controls="execution-grid" aria-expanded="false">Show details</button><div class="order-toggle" role="group" aria-label="Traversal order"><button data-order="preorder">PRE</button><button data-order="inorder" class="active">IN</button><button data-order="postorder">POST</button></div><button id="trace-first" aria-label="First step" title="First step">|‹</button><button id="trace-prev" aria-label="Previous step" title="Previous step">‹</button><button id="trace-play" class="trace-play" aria-label="Play trace">▶ <span>Play</span></button><button id="trace-next" aria-label="Next step" title="Next step">›</button><button id="trace-last" aria-label="Last step" title="Last step">›|</button><span id="step-count" class="step-count">0 / 0</span></div></div>
+      <div class="timeline-bar"><input type="range" min="0" value="0" max="0" id="trace-range" aria-label="Execution step"><span id="trace-caption">Ready to trace.</span></div>
+      <div class="execution-grid" id="execution-grid">
+        <div class="execution-cell source-cell"><div class="cell-header">Java source <span>Current line</span></div><div id="source-code" class="source-code" aria-label="Java reference code"></div></div>
+        <div class="execution-cell stack-cell"><div class="cell-header">Call stack <span>2.5D depth</span></div><div class="stack-stage"><div class="stack-axis">CALL DEPTH <span id="stack-depth">00</span><span class="stack-phase" id="stack-phase">READY</span></div><div id="stack-frames" class="stack-frames" aria-label="Active recursive call frames"></div><div id="stack-exits" class="stack-exits" aria-hidden="true"></div><div id="stack-event" class="stack-event" aria-live="off">Step through the recursion to see frames enter and return.</div></div></div>
+        <div class="execution-cell output-cell"><div class="cell-header">Output <span id="output-count">0 TOKENS</span></div><div id="output-tokens" class="output-tokens" aria-live="polite"></div><div class="output-note">Traversal order follows the same AST. Raw inorder tokens do not always preserve grouping.</div></div>
+      </div>
+    </section>
+    <footer class="footer">Expression Tree Studio <span>All computations run locally · Tree depth represents a conceptual model, not physical JVM memory</span></footer>
+  </main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+
+window.addEventListener('error', function (event) {
+  const panel = document.getElementById('startup-status');
+  if (!panel) return;
+  const title = panel.querySelector('.startup-title');
+  const message = panel.querySelector('.startup-detail');
+  panel.hidden = false;
+  panel.classList.add('startup-error');
+  if (title) title.textContent = 'Tree renderer could not start';
+  if (message) message.textContent = 'The page failed to initialize. Open this standalone HTML directly in a current browser. ' + (event.message || '');
+});
+window.addEventListener('unhandledrejection', function (event) {
+  const panel = document.getElementById('startup-status');
+  if (!panel) return;
+  panel.hidden = false;
+  panel.classList.add('startup-error');
+  panel.querySelector('.startup-title').textContent = 'Tree renderer encountered an error';
+  panel.querySelector('.startup-detail').textContent = String(event.reason?.message || event.reason || 'Unknown error');
+});
+
+/** Expression Tree Studio v2: pure, immutable, browser-independent arithmetic engine. */
+const MAX_INPUT_LENGTH = 500;
+const MAX_NODES = 79;
+const MAX_DEPTH = 32;
+const OPS = new Set(['+', '-', '*', '/']);
+const precedence = (op) => op === '+' || op === '-' ? 1 : 2;
+class ExpressionError extends Error {
+  constructor(message, position = null) {
+    super(message);
+    this.name = 'ExpressionError';
+    this.position = position;
+  }
+}
+function tokenize(source) {
+  if (typeof source !== 'string' || source.length > MAX_INPUT_LENGTH) {
+    throw new ExpressionError(`Expression must be at most ${MAX_INPUT_LENGTH} characters.`);
+  }
+  const tokens = [];
+  let i = 0;
+  while (i < source.length) {
+    const ch = source[i];
+    if (/\s/.test(ch)) { i++; continue; }
+    if (/[0-9]/.test(ch)) {
+      const start = i;
+      while (i < source.length && /[0-9]/.test(source[i])) i++;
+      const literal = source.slice(start, i);
+      if (literal.length > 12 || !Number.isSafeInteger(Number(literal)) || Number(literal) > 1_000_000_000) {
+        throw new ExpressionError('Use nonnegative integers at most 1,000,000,000.', start);
+      }
+      tokens.push({ kind: 'number', text: literal, pos: start });
+    } else if (OPS.has(ch) || ch === '(' || ch === ')') {
+      tokens.push({ kind: ch, text: ch, pos: i++ });
+    } else {
+      throw new ExpressionError(`Unsupported character “${ch}”. Use integers, + − × ÷, and parentheses.`, i);
+    }
+  }
+  tokens.push({ kind: 'eof', text: '', pos: source.length });
+  return tokens;
+}
+
+function parse(source) {
+  const tokens = tokenize(source);
+  let pos = 0;
+  let idSerial = 0;
+  let count = 0;
+  const newNode = (data, at) => {
+    if (++count > MAX_NODES) throw new ExpressionError(`Maximum ${MAX_NODES} tree nodes.`, at);
+    return { ...data, id: `n${++idSerial}` };
+  };
+  const peek = () => tokens[pos];
+  const consume = () => tokens[pos++];
+  const atom = (depth) => {
+    if (depth > MAX_DEPTH) throw new ExpressionError(`Nesting exceeds ${MAX_DEPTH} levels.`, peek().pos);
+    const t = peek();
+    if (t.kind === 'number') {
+      consume();
+      return newNode({ kind: 'number', value: Number(t.text), left: null, right: null }, t.pos);
+    }
+    if (t.kind === '(') {
+      consume();
+      const expr = expression(0, depth + 1);
+      if (peek().kind !== ')') throw new ExpressionError('Missing closing parenthesis.', peek().pos);
+      consume();
+      return expr;
+    }
+    if (t.kind === 'eof') throw new ExpressionError('Expression is incomplete. Add a number.', t.pos);
+    if (t.kind === '-') throw new ExpressionError('Unary minus is not supported. Use a binary subtraction.', t.pos);
+    throw new ExpressionError(`Expected a number or “(” before “${t.text}”.`, t.pos);
+  };
+  const expression = (minPrec, depth) => {
+    let left = atom(depth);
+    while (OPS.has(peek().kind) && precedence(peek().kind) >= minPrec) {
+      const tok = consume();
+      const right = expression(precedence(tok.kind) + 1, depth + 1);
+      left = newNode({ kind: 'operator', value: tok.kind, left, right }, tok.pos);
+    }
+    return left;
+  };
+  const result = expression(0, 0);
+  const t = peek();
+  if (t.kind !== 'eof') {
+    if (t.kind === ')') throw new ExpressionError('Unexpected closing parenthesis.', t.pos);
+    if (t.kind === 'number' || t.kind === '(') throw new ExpressionError('Missing operator between values.', t.pos);
+    throw new ExpressionError(`Unexpected token “${t.text}”.`, t.pos);
+  }
+  validateTree(result);
+  return result;
+}
+
+function walk(root, order = 'inorder') {
+  if (!['preorder', 'inorder', 'postorder'].includes(order)) throw new ExpressionError('Unknown traversal order.');
+  const output = [];
+  function visit(node) {
+    if (!node) return;
+    if (order === 'preorder') output.push(node);
+    visit(node.left);
+    if (order === 'inorder') output.push(node);
+    visit(node.right);
+    if (order === 'postorder') output.push(node);
+  }
+  visit(root);
+  return output;
+}
+function displayToken(node) { return node.kind === 'operator' ? node.value : String(node.value); }
+function rawInorder(root) { return walk(root, 'inorder').map(displayToken).join(' '); }
+function safeInfix(root) {
+  // Preserve the exact AST, including equal-precedence operators in right subtrees.
+  function fmt(n, parent = null, side = null) {
+    if (n.kind === 'number') return String(n.value);
+    let result = `${fmt(n.left, n, 'left')} ${n.value} ${fmt(n.right, n, 'right')}`;
+    if (parent && (precedence(n.value) < precedence(parent.value) ||
+      (side === 'right' && precedence(n.value) === precedence(parent.value)))) {
+      result = `(${result})`;
+    }
+    return result;
+  }
+  return fmt(root);
+}
+function structuralSignature(root) {
+  if (root.kind === 'number') return `#${root.value}`;
+  return `(${root.value}|${structuralSignature(root.left)}|${structuralSignature(root.right)})`;
+}
+function validateTree(root) {
+  if (!root || typeof root !== 'object') throw new ExpressionError('Tree is empty.');
+  const identities = new Set();
+  const ids = new Set();
+  let count = 0;
+  function visit(node, depth) {
+    if (depth > MAX_DEPTH) throw new ExpressionError(`Tree exceeds depth limit ${MAX_DEPTH}.`);
+    if (!node || typeof node !== 'object') throw new ExpressionError('Incomplete binary tree.');
+    if (identities.has(node)) throw new ExpressionError('Tree has duplicate references or a cycle.');
+    identities.add(node);
+    if (typeof node.id !== 'string' || !node.id || ids.has(node.id)) throw new ExpressionError('Invalid or duplicate node ID.');
+    ids.add(node.id);
+    if (++count > MAX_NODES) throw new ExpressionError(`Tree exceeds ${MAX_NODES} nodes.`);
+    if (node.kind === 'number') {
+      if (!Number.isSafeInteger(node.value) || node.value < 0 || node.value > 1_000_000_000 || node.left !== null || node.right !== null) {
+        throw new ExpressionError('Invalid numeric leaf.');
+      }
+    } else if (node.kind === 'operator' && OPS.has(node.value)) {
+      visit(node.left, depth + 1);
+      visit(node.right, depth + 1);
+    } else throw new ExpressionError('Invalid operator node.');
+  }
+  visit(root, 0);
+  return count;
+}
+function evaluate(root) {
+  const solve = (node) => {
+    if (node.kind === 'number') return node.value;
+    const a = solve(node.left), b = solve(node.right);
+    if (node.value === '/' && b === 0) throw new ExpressionError('Undefined: division by zero.');
+    const answer = node.value === '+' ? a + b : node.value === '-' ? a - b : node.value === '*' ? a * b : a / b;
+    if (!Number.isFinite(answer)) throw new ExpressionError('Undefined: numeric overflow.');
+    return answer;
+  };
+  try { return { ok: true, value: solve(root) }; }
+  catch (error) { return { ok: false, error: error instanceof Error ? error.message : String(error) }; }
+}
+function formatValue(result) {
+  if (!result.ok) return 'Undefined';
+  if (Object.is(result.value, -0)) return '0';
+  if (Number.isInteger(result.value)) return String(result.value);
+  return Number(result.value.toPrecision(9)).toString();
+}
+function findNode(root, id) {
+  if (root.id === id) return root;
+  return root.left && findNode(root.left, id) || root.right && findNode(root.right, id) || null;
+}
+function findParent(root, id, parent = null) {
+  if (root.id === id) return parent;
+  return root.left && findParent(root.left, id, root) || root.right && findParent(root.right, id, root) || null;
+}
+function rotate(root, pivotId, direction) {
+  if (direction !== 'left' && direction !== 'right') throw new ExpressionError('Unknown rotation direction.');
+  const pivot = findNode(root, pivotId);
+  if (!pivot || pivot.kind !== 'operator') throw new ExpressionError('Select an operator to rotate.');
+  const promote = direction === 'left' ? pivot.right : pivot.left;
+  if (promote?.kind !== 'operator') throw new ExpressionError(`Cannot rotate ${direction}: adjacent child must be an operator.`);
+  let rewritten;
+  if (direction === 'left') {
+    const newPivot = { ...pivot, right: promote.left };
+    rewritten = { ...promote, left: newPivot };
+  } else {
+    const newPivot = { ...pivot, left: promote.right };
+    rewritten = { ...promote, right: newPivot };
+  }
+  const replace = (node) => {
+    if (node.id === pivotId) return rewritten;
+    if (node.kind === 'number') return node;
+    const l = replace(node.left), r = replace(node.right);
+    return l === node.left && r === node.right ? node : { ...node, left: l, right: r };
+  };
+  const next = replace(root);
+  validateTree(next);
+  if (rawInorder(next) !== rawInorder(root)) throw new ExpressionError('Rotation invariant failed: inorder changed.');
+  return next;
+}
+function rotationFromDrop(root, draggedId, targetId) {
+  const source = findNode(root, draggedId);
+  const target = findNode(root, targetId);
+  if (!source || !target || source.kind !== 'operator' || target.kind !== 'operator') return null;
+  const parent = findParent(root, draggedId);
+  if (!parent || parent.id !== targetId) return null;
+  return { pivotId: targetId, direction: parent.left.id === draggedId ? 'right' : 'left' };
+}
+function compare(rootA, rootB) {
+  const oldValue = evaluate(rootA), newValue = evaluate(rootB);
+  return {
+    oldValue, newValue,
+    sameInorder: rawInorder(rootA) === rawInorder(rootB),
+    sameStructure: structuralSignature(rootA) === structuralSignature(rootB),
+    sameValue: oldValue.ok && newValue.ok ? Object.is(oldValue.value, newValue.value) || oldValue.value === newValue.value : null,
+    change: oldValue.ok && newValue.ok ? newValue.value - oldValue.value : null,
+  };
+}
+function rawInorderEvaluation(root) {
+  try { return evaluate(parse(rawInorder(root))); }
+  catch (e) { return { ok: false, error: e.message }; }
+}
+const TRACE_ORDER = ['preorder', 'inorder', 'postorder'];
+function generateTrace(root, order) {
+  if (!TRACE_ORDER.includes(order)) throw new ExpressionError('Unknown traversal.');
+  const steps = [];
+  const stack = [];
+  const printed = [];
+  const snapshot = (type, node, line, description) => {
+    steps.push({ type, nodeId: node?.id ?? null, line, description,
+      stack: stack.map(frame => ({ ...frame })), printed: printed.map(x => ({...x})) });
+  };
+  snapshot('ready', null, null, 'Ready to trace.');
+  const visit = (node) => {
+    stack.unshift({ nodeId: node.id, label: displayToken(node) });
+    snapshot('enter', node, 1, `Call ${order}(@${node.id}).`);
+    const print = () => {
+      printed.push({ id: node.id, token: displayToken(node) });
+      snapshot('print', node, order === 'preorder' ? 3 : order === 'postorder' ? 5 : 4, `Print ${displayToken(node)}.`);
+    };
+    const left = () => {
+      snapshot('left', node, order === 'preorder' ? 4 : 3, node.left ? `Visit left child @${node.left.id}.` : 'No left child.');
+      if (node.left) visit(node.left);
+    };
+    const right = () => {
+      snapshot('right', node, order === 'postorder' ? 4 : 5, node.right ? `Visit right child @${node.right.id}.` : 'No right child.');
+      if (node.right) visit(node.right);
+    };
+    if (order === 'preorder') { print(); left(); right(); }
+    if (order === 'inorder') { left(); print(); right(); }
+    if (order === 'postorder') { left(); right(); print(); }
+    stack.shift();
+    snapshot('return', node, 6, `Return from @${node.id}.`);
+  };
+  visit(root);
+  if (steps.length > 6 * MAX_NODES + 1) throw new ExpressionError('Trace step limit exceeded.');
+  return steps;
+}
+function nodeLayout(root) {
+  // Layout assigns horizontal positions in inorder order so edges cannot cross.
+  const nodes = [];
+  const links = [];
+  let current = 0;
+  let deepest = 0;
+  function visit(node, depth) {
+    if (node.left) visit(node.left, depth + 1);
+    const x = 45 + current++ * 76;
+    const y = 48 + depth * 87;
+    deepest = Math.max(deepest, depth);
+    nodes.push({ ...node, x, y, depth });
+    if (node.right) visit(node.right, depth + 1);
+  }
+  visit(root, 0);
+  const byId = new Map(nodes.map(n=>[n.id,n]));
+  for (const n of nodes) {
+    if (n.left) links.push([byId.get(n.id), byId.get(n.left.id)]);
+    if (n.right) links.push([byId.get(n.id), byId.get(n.right.id)]);
+  }
+  return { nodes, links, width: Math.max(300, current * 76 + 14), height: Math.max(205, deepest * 87 + 100) };
+}
+
+/** Edit a node's token without changing its identity or any child reference. */
+function editNode(root, targetId, value) {
+  const target = findNode(root, targetId);
+  if (!target) throw new ExpressionError('Selected node no longer exists.');
+  let normalized;
+  if (target.kind === 'number') {
+    if (typeof value !== 'string' || !/^[0-9]{1,12}$/.test(value) ||
+        !Number.isSafeInteger(Number(value)) || Number(value) > 1_000_000_000) {
+      throw new ExpressionError('Enter a nonnegative integer from 0 to 1,000,000,000.');
+    }
+    normalized = Number(value);
+  } else {
+    normalized = ({'−':'-','×':'*','÷':'/'})[value] || value;
+    if (!OPS.has(normalized)) throw new ExpressionError('Choose one binary operator: +, −, ×, ÷.');
+  }
+  function replace(node) {
+    if (node.id === targetId) return { ...node, value: normalized };
+    if (node.kind === 'number') return node;
+    const left = replace(node.left), right = replace(node.right);
+    return left === node.left && right === node.right ? node : { ...node, left, right };
+  }
+  const edited = replace(root);
+  validateTree(edited);
+  return edited;
+}
+
+/** Non-destructive live parser. Incomplete prefixes show a provisional tree,
+ * while invalid edits leave the last committed tree unchanged. */
+function interpretInput(source) {
+  const normalized = typeof source === 'string' ? source.replaceAll('−','-').replaceAll('×','*').replaceAll('÷','/') : source;
+  try { return { status: 'valid', root: parse(normalized), message: 'Expression is valid', ghostId: null }; }
+  catch (err) {
+    if (!(err instanceof ExpressionError)) throw err;
+    const original = err.message;
+    if (typeof normalized !== 'string' || !normalized.trim()) return { status: 'partial', root: null, message: 'Enter an expression to begin.', ghostId: null };
+    let tokens;
+    try { tokens = tokenize(normalized).filter(t => t.kind !== 'eof'); }
+    catch (e) { return { status: 'invalid', root: null, message: e.message, ghostId: null }; }
+    let balance = 0, expectOperand = true;
+    for (const t of tokens) {
+      if (expectOperand) {
+        if (t.kind === 'number') expectOperand = false;
+        else if (t.kind === '(') balance++;
+        else return { status: 'invalid', root: null, message: original, ghostId: null };
+      } else {
+        if (['+', '-', '*', '/'].includes(t.kind)) expectOperand = true;
+        else if (t.kind === ')' && balance > 0) balance--;
+        else return { status: 'invalid', root: null, message: original, ghostId: null };
+      }
+    }
+    const needsValue = expectOperand;
+    const recovered = normalized + (needsValue ? '0' : '') + ')'.repeat(balance);
+    try {
+      const root = parse(recovered);
+      const ghostId = needsValue ? walk(root, 'inorder').at(-1).id : null;
+      return {
+        status: 'partial', root, ghostId,
+        message: needsValue ? 'Waiting for the next operand. The outlined node is a placeholder.' :
+          `Close ${balance} unmatched parenthesis${balance === 1 ? '' : 'es'} to finish the expression.`
+      };
+    } catch (_) { return { status: 'invalid', root: null, message: original, ghostId: null }; }
+  }
+}
+
+/** Identity-aware comparison of two immutable expression AST snapshots.
+ *  Edge keys are ordered (parent, child); two opposite directions are distinct.
+ *  This is intentionally not a symbolic algebra equivalence checker.
+ */
+function analyzeTransformation(before,after){
+  validateTree(before);validateTree(after);
+  const oldNodes=new Map(walk(before,'preorder').map(n=>[n.id,n]));
+  const newNodes=new Map(walk(after,'preorder').map(n=>[n.id,n]));
+  const sameIdentity=oldNodes.size===newNodes.size&&[...oldNodes.keys()].every(id=>newNodes.has(id) && oldNodes.get(id).kind===newNodes.get(id).kind);
+  const edges=(root)=>{
+    const out=[];
+    for(const n of walk(root,'preorder')){
+      if(n.left)out.push({from:n.id,to:n.left.id});
+      if(n.right)out.push({from:n.id,to:n.right.id});
+    }
+    return out;
+  };
+  const key=e=>`${e.from}\u0000${e.to}`;
+  const oldEdges=edges(before),newEdges=edges(after);
+  const oldKeys=new Set(oldEdges.map(key)),newKeys=new Set(newEdges.map(key));
+  const changedTokens=sameIdentity?[...oldNodes].filter(([id,n])=>displayToken(n)!==displayToken(newNodes.get(id))).map(([id])=>id):[];
+  const removedEdges=sameIdentity?oldEdges.filter(e=>!newKeys.has(key(e))):[];
+  const addedEdges=sameIdentity?newEdges.filter(e=>!oldKeys.has(key(e))):[];
+  const comparison=compare(before,after);
+  return {
+    ...comparison,sameIdentity,changedTokens,removedEdges,addedEdges,
+    isStructuralChange:sameIdentity&&(removedEdges.length>0||addedEdges.length>0),
+    isPureRewire:sameIdentity&&changedTokens.length===0&&(removedEdges.length>0||addedEdges.length>0),
+  };
+}
+
+const $ = id => document.getElementById(id);
+const escapeHTML = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const readable = s => String(s).replaceAll('-', '−').replaceAll('*', '×').replaceAll('/', '÷');
+const clamp = (v,min,max) => Math.max(min,Math.min(max,v));
+const base = parse('8 - (3 - 1)');
+const state = {
+  history:[{root:base, label:'Initial expression', batch:null,kind:'initial'}],index:0,batch:0,
+  selectedId:base.id,order:'inorder',step:0,timer:null,traceExpanded:false,
+  input:{status:'valid',root:base,message:'Expression is valid',ghostId:null},
+  camera:{yaw:-0.36,pitch:-0.32,zoom:1}, pointer:null,
+  projected:new Map(), visualPositions:new Map(), morphPending:false, morphRevision:0, morphFrame:0, nodeEdit:null, lastTap:null, draft:false, diffVisible:true
+};
+const root=()=>state.history[state.index].root;
+const activeRoot=()=>state.input.status==='partial' && state.input.root ? state.input.root : root();
+const isReady=()=>state.input.status==='valid';
+let toastTimer;
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2800);}
+function pause(){if(state.timer){clearInterval(state.timer);state.timer=null;}}
+function resetPlayback(){pause();state.step=0;}
+function commit(next,label,kind='edit'){
+  validateTree(next);
+  if(structuralSignature(next)===structuralSignature(root())) return false;
+  const prior=state.history[state.index];
+  state.history=state.history.slice(0,state.index+1);
+  if(kind==='edit' && prior.batch===state.batch && state.history.length>1){
+    state.history[state.index]={root:next,label,batch:state.batch,kind};
+  } else {
+    state.history.push({root:next,label,batch:kind==='edit'?state.batch:null,kind});
+    if(state.history.length>84)state.history.splice(1,1);
+  }
+  state.index=state.history.length-1;
+  state.selectedId=next.id;
+  state.morphPending=true;resetPlayback();return true;
+}
+function finishEditing(){state.batch++;state.draft=false;}
+function reconcileInput(){
+  $('expression-input').value=safeInfix(root());
+  state.input={status:'valid',root:root(),message:'Expression is valid',ghostId:null};
+  $('example-picker').value=Array.from($('example-picker').options).some(o=>o.value===$('expression-input').value)?$('expression-input').value:'custom';
+  state.draft=false;
+}
+function resetAll(){closeNodeEditor(true);pause();state.traceExpanded=false;state.camera.zoom=1;state.history=[{root:base,label:'Initial expression',batch:null,kind:'initial'}];state.index=0;state.selectedId=base.id;state.batch++;state.step=0;state.morphPending=true;reconcileInput();render();}
+function changeInput(){
+  if(state.nodeEdit)closeNodeEditor(true);
+  const source=$('expression-input').value;
+  state.input=interpretInput(source);
+  state.draft=true;
+  pause();
+  if(state.input.status==='valid'){
+    commit(state.input.root,'Live input','edit');
+  }else{resetPlayback();}
+  render();
+}
+function loadExample(expression){
+  closeNodeEditor(true);finishEditing();
+  const next=parse(expression);
+  commit(next,'Load example','example');
+  reconcileInput();render();
+}
+function updateHistory(direction){
+  closeNodeEditor(true);
+  if(direction===-1 && state.index===0) {if(!isReady()){reconcileInput();render();}return;}
+  const next=state.index+direction;
+  if(next<0||next>=state.history.length)return;
+  finishEditing();state.index=next;state.selectedId=root().id;state.morphPending=true;resetPlayback();reconcileInput();render();
+}
+function rotateSelected(direction,pivotId=state.selectedId){
+  if(!isReady()){toast('Finish the expression before rotating its tree.');return;}
+  try{
+    const from=root();const pivot=findNode(from,pivotId);
+    const promoted=direction==='left'?pivot?.right:pivot?.left;
+    const next=rotate(from,pivotId,direction);
+    closeNodeEditor(true);finishEditing();
+    const changed=commit(next,`Rotate ${direction}`,'rotation');
+    state.selectedId=promoted.id;
+    reconcileInput();render();
+    if(changed)toast(`Rotation applied. Inorder order remains ${readable(rawInorder(next))}.`);
+  }catch(e){toast(e.message);}
+}
+const cameraInitial={yaw:-0.36,pitch:-0.32,zoom:1};
+function resetCamera(){state.camera={...cameraInitial};renderScene();}
+function fitCamera(){state.camera.zoom=1;renderScene();}
+function zoom(mult){state.camera.zoom=clamp(state.camera.zoom*mult,0.42,2.7);renderScene();}
+function cameraOrbit(dx,dy){state.camera.yaw+=dx*.007;state.camera.pitch=clamp(state.camera.pitch+dy*.006,-1.31,1.31);renderScene();}
+function projectPoint(point,fitScale){
+  const {yaw,pitch,zoom}=state.camera;
+  const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+  const xx=point.x*cy+point.z*sy;
+  const zz=-point.x*sy+point.z*cy;
+  const yy=point.y*cp-zz*sp;
+  const depth=point.y*sp+zz*cp;
+  const perspective=clamp(Math.exp(depth/26),.64,1.55);
+  const scale=fitScale*zoom*perspective;
+  return {x:500+xx*scale,y:285-yy*scale,depth,size:clamp(perspective,0.6,1.6)};
+}
+const svgEsc=escapeHTML;
+function sceneGeometry(sceneRoot){
+  const layout=nodeLayout(sceneRoot);
+  const count=layout.nodes.length;
+  const minX=Math.min(...layout.nodes.map(n=>n.x)),maxX=Math.max(...layout.nodes.map(n=>n.x));
+  const maxDepth=Math.max(...layout.nodes.map(n=>n.depth));
+  const world=new Map();
+  for(const n of layout.nodes)world.set(n.id,{
+    x:(n.x-(minX+maxX)/2)/76*1.42,
+    y:(maxDepth/2-n.depth)*1.75,
+    z:(n.depth-maxDepth/2)*.68
+  });
+  // Fit transformed, perspective-projected bounds, not raw layout dimensions.
+  // Reserve 95px to either side and 80px above/below for node radii and controls.
+  const unit=[...world.values()].map(w=>projectPoint(w,1));
+  const xs=unit.map(p=>p.x-500),ys=unit.map(p=>p.y-285);
+  const spanX=Math.max(...xs)-Math.min(...xs);
+  const spanY=Math.max(...ys)-Math.min(...ys);
+  const baseRadius=count===1?1.1:0.7;
+  const fitScale=Math.min(255,940/(spanX+baseRadius*2),510/(spanY+baseRadius*2));
+  const centerX=(Math.max(...xs)+Math.min(...xs))/2;
+  const centerY=(Math.max(...ys)+Math.min(...ys))/2;
+  return {layout,world,fitScale,maxDepth,centerX,centerY};
+}
+// Animate from the current on-screen positions, not merely the previous target.
+// This handles rapid edits, Undo and moving between two structurally different trees.
+function animateMorph(from,to,edges){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches || !from.size){
+    state.visualPositions=new Map(to);return;
+  }
+  const revision=++state.morphRevision;
+  const duration=310;
+  const started=performance.now();
+  const scene=$('scene');
+  function frame(now){
+    if(revision!==state.morphRevision)return;
+    const t=clamp((now-started)/duration,0,1);
+    const eased=1-Math.pow(1-t,3);
+    const positions=new Map();
+    for(const [id,dest] of to){
+      const origin=from.get(id)??dest;
+      positions.set(id,{...dest,x:origin.x+(dest.x-origin.x)*eased,y:origin.y+(dest.y-origin.y)*eased});
+    }
+    state.visualPositions=positions;
+    for(const el of scene.querySelectorAll('[data-node]')){
+      const p=positions.get(el.dataset.node);if(p)el.setAttribute('transform',`translate(${p.x.toFixed(2)} ${p.y.toFixed(2)})`);
+    }
+    for(const [a,b,el] of edges){
+      const start=positions.get(a),end=positions.get(b);
+      if(start&&end){el.setAttribute('x1',start.x);el.setAttribute('y1',start.y);el.setAttribute('x2',end.x);el.setAttribute('y2',end.y);}
+    }
+    positionNodeEditor();
+    if(t<1)state.morphFrame=requestAnimationFrame(frame);
+    else state.morphFrame=0;
+  }
+  frame(started);
+}
+function renderScene(){
+  const sceneRoot=activeRoot(),scene=$('scene');
+  if(!sceneRoot){$('startup-status').hidden=true;state.projected=new Map();$('semantic-overlay').innerHTML='';scene.innerHTML='<text x="500" y="285" text-anchor="middle" font-size="20" fill="#82939d">Enter a number to begin</text>';return;}
+  if(state.morphFrame){cancelAnimationFrame(state.morphFrame);state.morphFrame=0;}
+  state.morphRevision++;
+  const previous=new Map(state.visualPositions);
+  const {layout,world,fitScale,maxDepth,centerX,centerY}=sceneGeometry(sceneRoot);
+  const projected=new Map();
+  for(const n of layout.nodes){
+    const pos=projectPoint(world.get(n.id),fitScale);
+    projected.set(n.id,{...pos,x:pos.x-centerX*fitScale*state.camera.zoom,y:pos.y-centerY*fitScale*state.camera.zoom});
+  }
+  state.projected=projected;
+  const fragments=[];
+  const planeY=-Math.max(2.1,maxDepth*.86+1.4);
+  const gridRange=Math.min(18,Math.max(8,Math.ceil(layout.nodes.length*.8)));
+  for(let i=-gridRange;i<=gridRange;i+=2){
+    const a=projectPoint({x:i,y:planeY,z:-12},fitScale),b=projectPoint({x:i,y:planeY,z:12},fitScale);
+    const c=projectPoint({x:-gridRange,y:planeY,z:i},fitScale),d=projectPoint({x:gridRange,y:planeY,z:i},fitScale);
+    fragments.push(`<path class="scene-grid" d="M ${a.x.toFixed(2)} ${a.y.toFixed(2)} L ${b.x.toFixed(2)} ${b.y.toFixed(2)} M ${c.x.toFixed(2)} ${c.y.toFixed(2)} L ${d.x.toFixed(2)} ${d.y.toFixed(2)}"/>`);
+  }
+  const prev=state.index>0?state.history[state.index-1].root:null;
+  const semantic=isReady()&&prev&&state.history[state.index].kind==='rotation'?analyzeTransformation(prev,root()):null;
+  const added=new Set(semantic?.addedEdges.map(e=>`${e.from}:${e.to}`)??[]);
+  const tracePath=state.tracePath??new Set();
+  const picked=isReady()?findNode(root(),state.selectedId):null;
+  const pickedParent=picked?findParent(root(),picked.id):null;
+  const relatedIds=new Set([picked?.id,pickedParent?.id,picked?.left?.id,picked?.right?.id].filter(Boolean));
+  const links=layout.links.map(([a,b])=>({parent:a.id,child:b.id,a:projected.get(a.id),b:projected.get(b.id),active:a.id===state.traceNodeId||b.id===state.traceNodeId,callPath:tracePath.has(a.id)&&tracePath.has(b.id),changed:added.has(`${a.id}:${b.id}`),related:relatedIds.has(a.id)&&relatedIds.has(b.id)}));
+  const edgeLines=links.map(({a,b,parent,child,active,callPath,changed,related})=>`<line data-edge-parent="${svgEsc(parent)}" data-edge-child="${svgEsc(child)}" class="scene-link ${active?'active':''} ${callPath?'call-path':''} ${related?'related':''} ${changed&&state.diffVisible?'new-link':''}" x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}"/>`).join('');
+  const ordered=[...layout.nodes].sort((a,b)=>projected.get(a.id).depth-projected.get(b.id).depth);
+  const nodeVisual=ordered.map(n=>{
+    const p=projected.get(n.id),ghost=n.id===state.input.ghostId&&state.input.status==='partial';
+    const selected=state.selectedId===n.id&&isReady();
+    const related=relatedIds.has(n.id);
+    const active=state.traceNodeId===n.id&&isReady();
+    const radius=window.matchMedia('(max-width:640px)').matches?clamp(44*p.size,30,48):clamp(22*p.size,15,30);
+    const label=ghost?'?':n.kind==='operator'?n.value:String(n.value);
+    const fill=ghost?'#2e353e':n.kind==='operator'?'url(#shadeOperator)':'url(#shadeOperand)';
+    const stroke=ghost?'#b29a76':n.kind==='operator'?'#b99b74':'#728e9e';
+    const desc=ghost?'pending operand':n.kind==='operator'?'operator '+n.value:'operand '+n.value;
+    return `<g class="node-group ${selected?'selected':''} ${related?'related':''} ${active?'active':''} ${ghost?'ghost':''}" data-node="${svgEsc(n.id)}" role="button" tabindex="0" aria-label="${svgEsc(desc)}" transform="translate(${p.x.toFixed(2)} ${p.y.toFixed(2)})">
+      <ellipse cx="2" cy="6" rx="${radius}" ry="${radius*.95}" fill="#080d11" opacity=".55"/>
+      <circle class="node-outline" r="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="1.7"/>
+      <path d="M ${(-radius*.63).toFixed(1)} ${(-radius*.37).toFixed(1)} Q 0 ${(-radius*.95).toFixed(1)} ${(radius*.62).toFixed(1)} ${(-radius*.38).toFixed(1)}" stroke="#ffffff" stroke-opacity=".13" stroke-width="1.3" fill="none"/>
+      <text text-anchor="middle" dominant-baseline="central" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="${window.matchMedia('(max-width:640px)').matches?clamp(27*p.size,19,32):clamp(17*p.size,12,21)}" font-weight="600" fill="#f7f4ed">${svgEsc(readable(label))}</text>
+      <text class="node-id" text-anchor="middle" y="${radius+13}" font-size="9" font-family="ui-monospace,Menlo,monospace" fill="#8b9da7">${svgEsc(n.id)}</text></g>`;
+  }).join('');
+  scene.innerHTML=`<defs><clipPath id="floorClip"><rect x="0" y="360" width="1000" height="210"/></clipPath><radialGradient id="shadeOperator" cx="28%" cy="20%" r="85%"><stop offset="0%" stop-color="#90775c"/><stop offset="53%" stop-color="#6e5e4d"/><stop offset="100%" stop-color="#403a34"/></radialGradient><radialGradient id="shadeOperand" cx="27%" cy="22%" r="89%"><stop offset="0%" stop-color="#577181"/><stop offset="59%" stop-color="#324a59"/><stop offset="100%" stop-color="#20303b"/></radialGradient></defs><g clip-path="url(#floorClip)" aria-hidden="true">${fragments.join('')}</g><g>${edgeLines}</g><g>${nodeVisual}</g>`;
+  $('node-count').textContent=`${layout.nodes.length} nodes · ${maxDepth+1} levels`;
+  $('startup-status').hidden=true;
+  renderSemanticOverlay();
+  const doMorph=state.morphPending;
+  state.morphPending=false;
+  if(doMorph){
+    const edgeElements=[...scene.querySelectorAll('[data-edge-parent]')].map(el=>[el.dataset.edgeParent,el.dataset.edgeChild,el]);
+    animateMorph(previous,projected,edgeElements);
+  }else{state.visualPositions=new Map(projected);positionNodeEditor();}
+}
+
+function semanticPrevious(){
+  if(!isReady()||state.index===0||state.history[state.index]?.kind!=='rotation')return null;
+  const before=state.history[state.index-1].root;
+  const analysis=analyzeTransformation(before,root());
+  return analysis.isPureRewire?{before,analysis}:null;
+}
+// Render the BEFORE geometry in the same camera coordinates. Never mutate the AST.
+function renderSemanticOverlay(){
+  const overlay=$('semantic-overlay'),data=semanticPrevious();
+  const visible=Boolean(data&&state.diffVisible&&!state.pointer&&!state.nodeEdit);
+  overlay.toggleAttribute('hidden',!visible);
+  if(!visible){overlay.innerHTML='';return;}
+  const {before,analysis}=data;
+  const {layout,world,fitScale,centerX,centerY}=sceneGeometry(before);
+  const oldPositions=new Map();
+  for(const n of layout.nodes){
+    const q=projectPoint(world.get(n.id),fitScale);
+    oldPositions.set(n.id,{x:q.x-centerX*fitScale*state.camera.zoom,y:q.y-centerY*fitScale*state.camera.zoom});
+  }
+  const changed=new Set(analysis.removedEdges.map(e=>`${e.from}:${e.to}`));
+  const links=layout.links.map(([a,b])=>{
+    const pa=oldPositions.get(a.id),pb=oldPositions.get(b.id);
+    return `<line class="semantic-old-edge ${changed.has(`${a.id}:${b.id}`)?'removed':''}" x1="${pa.x.toFixed(1)}" y1="${pa.y.toFixed(1)}" x2="${pb.x.toFixed(1)}" y2="${pb.y.toFixed(1)}"/>`;
+  }).join('');
+  const nodes=layout.nodes.map(n=>{
+    const a=oldPositions.get(n.id),b=state.projected.get(n.id);
+    if(!b||Math.hypot(a.x-b.x,a.y-b.y)<14)return '';
+    return `<g transform="translate(${a.x.toFixed(1)} ${a.y.toFixed(1)})"><circle r="16" class="semantic-old-node"/><text y="-24" text-anchor="middle">${escapeHTML(n.id)}</text></g>`;
+  }).join('');
+  overlay.innerHTML=`<g aria-hidden="true">${links}${nodes}<text x="20" y="33" class="semantic-caption">PREVIOUS STRUCTURE · GHOST LINKS</text></g>`;
+}
+
+function eventScenePosition(evt){
+  // SVG may be letterboxed in a non-16:9 panel; clientRect scaling is wrong.
+  const svg=$('scene'), matrix=svg.getScreenCTM();
+  if(matrix){const p=svg.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;const q=p.matrixTransform(matrix.inverse());return {x:q.x,y:q.y};}
+  const r=svg.getBoundingClientRect();return {x:(evt.clientX-r.left)/r.width*1000,y:(evt.clientY-r.top)/r.height*570};
+}
+function nearestValidDrop(sourceId,evt){
+  const point=eventScenePosition(evt);
+  let nearest=null,distance=Infinity;
+  for(const [id,xy] of state.visualPositions){
+    if(id===sourceId)continue;
+    const d=Math.hypot(xy.x-point.x,xy.y-point.y);
+    if(d<distance){distance=d;nearest=id;}
+  }
+  if(distance>51)return null;
+  const rotation=rotationFromDrop(root(),sourceId,nearest);
+  return rotation?{...rotation,targetId:nearest}:null;
+}
+function drawRotationGhost(drop){
+  // Ghost nodes/edges represent the full proposed geometry, not a committed AST.
+  // Invalid targets never get a preview or mutate state.
+  try{
+    const proposed=rotate(root(),drop.pivotId,drop.direction);
+    const {layout,world,fitScale,centerX,centerY}=sceneGeometry(proposed);
+    const positions=new Map();
+    for(const n of layout.nodes){
+      const q=projectPoint(world.get(n.id),fitScale);
+      positions.set(n.id,{x:q.x-centerX*fitScale*state.camera.zoom,y:q.y-centerY*fitScale*state.camera.zoom});
+    }
+    const lines=layout.links.map(([a,b])=>{
+      const x=positions.get(a.id),y=positions.get(b.id);
+      return `<line x1="${x.x.toFixed(1)}" y1="${x.y.toFixed(1)}" x2="${y.x.toFixed(1)}" y2="${y.y.toFixed(1)}"/>`;
+    }).join('');
+    const nodes=layout.nodes.map(n=>{
+      const q=positions.get(n.id);
+      return `<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="15"/>`;
+    }).join('');
+    $('preview-scene').innerHTML=`<g>${lines}${nodes}</g><text x="18" y="28">PROPOSED ROTATION · RELEASE TO APPLY</text>`;
+  }catch(e){$('preview-scene').innerHTML='';}
+}
+function updateDragPreview(evt,p){
+  const target=isReady()?nearestValidDrop(p.nodeId,evt):null;
+  p.drop=target;
+  $('semantic-overlay').setAttribute('hidden','');
+  const overlay=$('drag-preview'),wrapper=$('scene-wrapper').getBoundingClientRect();
+  overlay.hidden=false;
+  overlay.classList.toggle('allowed',!!target);
+  overlay.style.left=clamp(evt.clientX-wrapper.left+15,8,wrapper.width-175)+'px';
+  overlay.style.top=clamp(evt.clientY-wrapper.top+15,8,wrapper.height-44)+'px';
+  $('drag-message').textContent=target?`Release · rotate ${target.direction}`:'Drop onto direct parent operator';
+  if(target){
+    if(p.previewTarget!==target.targetId || !p.previewDrop){
+      p.previewTarget=target.targetId;p.previewDrop=target;
+      drawRotationGhost(target);
+    }
+  }else{
+    p.previewTarget=null;p.previewDrop=null;$('preview-scene').innerHTML='';
+  }
+  for(const node of $('scene').querySelectorAll('.drop-valid'))node.classList.remove('drop-valid');
+  if(target){const node=$('scene').querySelector(`[data-node="${target.targetId}"]`);if(node)node.classList.add('drop-valid');}
+}
+function clearDragPreview(){
+  $('drag-preview').hidden=true;$('preview-scene').innerHTML='';renderSemanticOverlay();
+  for(const node of $('scene').querySelectorAll('.drop-valid'))node.classList.remove('drop-valid');
+}
+function onSceneDown(evt){
+  if(evt.button!==0 || evt.target.closest?.('.scene-tools,.node-editor'))return;
+  // Freeze any active morph at its actual displayed coordinates while dragging.
+  if(state.morphFrame){cancelAnimationFrame(state.morphFrame);state.morphFrame=0;state.morphRevision++;}
+  if(state.nodeEdit)closeNodeEditor(true);
+  const el=evt.target.closest?.('[data-node]');
+  state.pointer={pointerId:evt.pointerId,mode:el?'node':'orbit',nodeId:el?.getAttribute('data-node')??null,x:evt.clientX,y:evt.clientY,startX:evt.clientX,startY:evt.clientY,moved:false};
+  $('scene-wrapper').setPointerCapture(evt.pointerId);
+}
+function onSceneMove(evt){const p=state.pointer;if(!p||p.pointerId!==evt.pointerId)return;
+  const dx=evt.clientX-p.x,dy=evt.clientY-p.y;
+  if(Math.hypot(evt.clientX-p.startX,evt.clientY-p.startY)>7)p.moved=true;
+  if(p.mode==='orbit'&&p.moved){$('scene-wrapper').classList.add('orbiting');cameraOrbit(dx,dy);}
+  if(p.mode==='node'&&p.moved){$('scene-wrapper').classList.add('node-dragging');updateDragPreview(evt,p);}
+  p.x=evt.clientX;p.y=evt.clientY;
+}
+function onSceneUp(evt){const p=state.pointer;if(!p||p.pointerId!==evt.pointerId)return;
+  state.pointer=null;$('scene-wrapper').classList.remove('orbiting','node-dragging');clearDragPreview();
+  if(p.mode==='node'){
+    if(!p.moved){
+      if(isReady()&&findNode(root(),p.nodeId)){
+        const tap=state.lastTap;
+        state.lastTap={id:p.nodeId,at:performance.now()};
+        if(tap&&tap.id===p.nodeId&&performance.now()-tap.at<460){
+          state.lastTap=null;openNodeEditor(p.nodeId);
+        }else{state.selectedId=p.nodeId;render();}
+      }
+      return;
+    }
+    state.lastTap=null;
+    if(!isReady()){toast('Complete your expression before changing its structure.');return;}
+    const drop=nearestValidDrop(p.nodeId,evt);
+    if(drop)rotateSelected(drop.direction,drop.pivotId);
+    else toast('To rotate, drag an operator onto its direct parent operator.');
+  }
+}
+function onSceneCancel(){state.pointer=null;$('scene-wrapper').classList.remove('orbiting','node-dragging');clearDragPreview();}
+function positionNodeEditor(){
+  if(!state.nodeEdit)return;
+  const point=state.visualPositions.get(state.nodeEdit.id);
+  if(!point)return;
+  const svg=$('scene'),mat=svg.getScreenCTM();if(!mat)return;
+  const svgP=svg.createSVGPoint();svgP.x=point.x;svgP.y=point.y;
+  const client=svgP.matrixTransform(mat),rect=$('scene-wrapper').getBoundingClientRect();
+  const el=$('node-editor'),width=212,height=170;
+  el.style.left=clamp(client.x-rect.left+32,8,Math.max(8,rect.width-width-8))+'px';
+  el.style.top=clamp(client.y-rect.top-30,8,Math.max(8,rect.height-height-8))+'px';
+}
+function openNodeEditor(id){
+  if(!isReady())return;
+  if(state.nodeEdit)closeNodeEditor(true);
+  const node=findNode(root(),id);if(!node)return;
+  finishEditing();
+  state.nodeEdit={id,kind:node.kind,originalHistory:state.history.slice(),originalIndex:state.index};
+  state.selectedId=id;
+  const el=$('node-editor');el.hidden=false;
+  $('node-edit-error').textContent='Changes update the tree immediately.';
+  $('node-edit-error').classList.remove('error');
+  $('node-edit-label').textContent=node.kind==='number'?'OPERAND · NONNEGATIVE INTEGER':'BINARY OPERATOR';
+  const field=$('node-edit-value'),selector=$('node-edit-operator');
+  field.hidden=node.kind!=='number';selector.hidden=node.kind!=='operator';
+  field.value=String(node.value);selector.value=String(node.value);
+  render();positionNodeEditor();
+  const focused=node.kind==='number'?field:selector;
+  focused.focus();if(node.kind==='number')field.select();
+}
+function applyNodeEdit(value){
+  if(!state.nodeEdit)return false;
+  const {id}=state.nodeEdit;
+  try{
+    const edited=editNode(root(),id,value);
+    commit(edited,`Edit node @${id}`,'edit');
+    state.selectedId=id;
+    reconcileInput();render();
+    $('node-edit-error').textContent='Applied to the expression tree.';
+    $('node-edit-error').classList.remove('error');
+    return true;
+  }catch(e){
+    $('node-edit-error').textContent=e.message;$('node-edit-error').classList.add('error');
+    return false;
+  }
+}
+function closeNodeEditor(keep){
+  const session=state.nodeEdit;if(!session)return;
+  state.nodeEdit=null;$('node-editor').hidden=true;
+  if(!keep){
+    state.history=session.originalHistory;
+    state.index=session.originalIndex;
+    state.selectedId=session.id;
+    state.morphPending=true;
+    resetPlayback();reconcileInput();render();
+  }
+  finishEditing();
+}
+const sourceLines={
+  preorder:['void preorder(Node node) {','  if (node == null) return;','  System.out.print(node.value);','  preorder(node.left);','  preorder(node.right);','}'],
+  inorder:['void inorder(Node node) {','  if (node == null) return;','  inorder(node.left);','  System.out.print(node.value);','  inorder(node.right);','}'],
+  postorder:['void postorder(Node node) {','  if (node == null) return;','  postorder(node.left);','  postorder(node.right);','  System.out.print(node.value);','}']
+};
+function steps(){return generateTrace(root(),state.order);}
+function renderInput(){
+  const info=state.input;
+  $('input-status').className=`editor-feedback ${info.status==='valid'?'':info.status}`;
+  $('input-status').textContent=info.status==='valid'?'Expression valid':info.message;
+  $('expression-input').setAttribute('aria-invalid',String(info.status==='invalid'));
+  $('scene-mode').textContent=info.status==='partial'?'Preview · incomplete':info.status==='invalid'?'Last valid tree':'3D · interactive';
+}
+function renderValue(){
+  const info=state.input;
+  if(info.status==='partial'){
+    $('evaluation-status').textContent='EDITING';$('expression-value').textContent='…';$('expression-value').className='big-value pending';
+    $('value-message').textContent='Finish the expression to evaluate it.';
+    $('raw-inorder').textContent=readable(rawInorder(activeRoot()??root()));$('raw-inorder-value').textContent='—';
+    $('meaning-note').className='meaning-note neutral';$('meaning-note').textContent='Finish typing to evaluate.';return;
+  }
+  $('evaluation-status').textContent=info.status==='invalid'?'INVALID INPUT':'VALID';
+  const result=evaluate(root()),raw=rawInorderEvaluation(root());
+  $('expression-value').textContent=formatValue(result);
+  $('expression-value').className=`big-value ${result.ok?'':'invalid'}`;
+  $('value-message').textContent=info.status==='invalid'?'Showing the last valid expression.':result.ok?'From this tree':result.error;
+  $('raw-inorder').textContent=readable(rawInorder(root()));
+  $('raw-inorder-value').textContent=formatValue(raw);
+  const note=$('meaning-note');
+  if(!result.ok||!raw.ok){note.className='meaning-note neutral';note.textContent='Calculation undefined.';}
+  else if(result.value===raw.value){note.className='meaning-note good';note.textContent='Same value for this expression.';}
+  else{note.className='meaning-note';note.textContent='Parentheses change the result.';}
+}
+function renderInspector(){
+  const node=isReady()?findNode(root(),state.selectedId):null;
+  if(!node){$('inspector').innerHTML='<div class="inspect-kind">Finish editing to inspect or rotate a node.</div>';return;}
+  const parent=findParent(root(),node.id);
+  const subtree=evaluate(node);
+  const left=node.left?.kind==='operator';const right=node.right?.kind==='operator';
+  $('inspector').innerHTML=`<div class="inspect-primary"><b>${escapeHTML(readable(displayToken(node)))}</b><span class="inspect-kind">${node.kind==='operator'?'Operator':'Operand'} · ${escapeHTML(node.id)}</span></div>
+    <div class="inspect-row inspector-subtree"><span>Subtree value</span><strong>${escapeHTML(formatValue(subtree))}</strong></div>
+    <div class="inspector-expression">${escapeHTML(readable(safeInfix(node)))}</div>
+    <div class="inspect-row"><span>Parent</span><strong>${parent?escapeHTML(parent.id):'ROOT'}</strong></div>
+    <div class="inspect-row"><span>Left child</span><strong>${node.left?escapeHTML(node.left.id):'NULL'}</strong></div>
+    <div class="inspect-row"><span>Right child</span><strong>${node.right?escapeHTML(node.right.id):'NULL'}</strong></div>
+    <div class="inspect-actions"><button id="edit-selected" title="Edit value (double-click node)">Edit</button><button id="rotate-left" ${!right?'disabled':''} title="Promote right operator">↶ Rotate left</button><button id="rotate-right" ${!left?'disabled':''} title="Promote left operator">Rotate right ↷</button></div>`;
+  $('edit-selected').addEventListener('click',()=>openNodeEditor(node.id));
+  $('rotate-left').addEventListener('click',()=>rotateSelected('left'));
+  $('rotate-right').addEventListener('click',()=>rotateSelected('right'));
+}
+function renderChange(){
+  const previous=state.history[Math.max(0,state.index-1)].root;
+  const current=root();
+  const changed=state.index>0&&isReady();
+  $('change-panel').hidden=!changed;
+  const resultA=evaluate(previous),resultB=evaluate(current);
+  $('before-expression').textContent=safeInfix(previous);
+  $('after-expression').textContent=safeInfix(current);
+  $('before-value').textContent=formatValue(resultA);
+  $('after-value').textContent=formatValue(resultB);
+  const semantic=semanticPrevious();
+  const toggle=$('diff-toggle');
+  toggle.disabled=!semantic;toggle.setAttribute('aria-pressed',String(Boolean(semantic&&state.diffVisible)));
+  toggle.textContent=semantic?(state.diffVisible?'Hide ghost':'Show ghost'):'Ghost view';
+  $('diff-legend').hidden=!semantic;
+  if(!changed){$('change-note').textContent='Make an edit or rotate an operator to compare states.';return;}
+  const diff=analyzeTransformation(previous,current);
+  $('change-note').textContent=diff.sameInorder ?
+    `Inorder tokens preserved. ${diff.sameValue?'Evaluation unchanged.':diff.change===null?'At least one value is undefined.':`Result changed by ${formatValue({ok:true,value:diff.change})}.`}`:
+    `Expression updated. ${diff.sameValue?'Same value, different grouping or tokens.':'Structure and arithmetic may differ.'}`;
+}
+
+function renderStack(current){
+  const container=$('stack-frames');
+  const existing=new Map([...container.querySelectorAll('.stack-card')].map(el=>[el.dataset.frame,el]));
+  const frames=current.stack;
+  const exits=$('stack-exits');
+  exits.replaceChildren();
+  // Preserve a departing frame briefly as a non-interactive visual layer.
+  // Direct timeline jumps without the prior frame still show a precise RETURN event.
+  if(current.type==='return'&&current.nodeId&&existing.has(current.nodeId)){
+    const prior=existing.get(current.nodeId),oldBox=prior.getBoundingClientRect();
+    const stageBox=exits.parentElement.getBoundingClientRect();
+    const clone=prior.cloneNode(true);
+    clone.className='stack-departure';
+    clone.removeAttribute('data-frame');clone.removeAttribute('tabindex');
+    clone.setAttribute('aria-hidden','true');
+    clone.style.top=`${oldBox.top-stageBox.top}px`;
+    clone.style.left=`${oldBox.left-stageBox.left}px`;
+    clone.style.width=`${oldBox.width}px`;
+    exits.append(clone);
+    clone.addEventListener('animationend',()=>{if(clone.isConnected)clone.remove();},{once:true});
+  }
+  if(!frames.length){container.replaceChildren(Object.assign(document.createElement('p'),{className:'stack-empty',textContent:'No active calls.'}));}
+  else{
+    const fragment=document.createDocumentFragment();
+    for(const [i,f] of frames.entries()){
+      let el=existing.get(f.nodeId);
+      if(!el){el=document.createElement('button');el.type='button';el.className='stack-card entering';el.dataset.frame=f.nodeId;}
+      else el.classList.remove('entering');
+      el.classList.toggle('active',i===0);
+      el.style.marginLeft=`${Math.min(i*8,45)}px`;
+      el.style.zIndex=String(99-i);
+      el.innerHTML=`<strong>${escapeHTML(state.order)}(@${escapeHTML(f.nodeId)})</strong><small>${escapeHTML(readable(f.label))} · #${frames.length-i}</small>`;
+      fragment.append(el);
+    }
+    container.replaceChildren(fragment);
+  }
+  const phase=({ready:'READY',enter:'CALL',left:'VISIT LEFT',right:'VISIT RIGHT',print:'PRINT',return:'RETURN'})[current.type]||'TRACE';
+  $('stack-phase').textContent=phase;
+  const event=$('stack-event');
+  event.className=`stack-event phase-${current.type||'ready'}`;
+  if(current.type==='return')event.textContent=`↳ Frame @${current.nodeId} released`;
+  else if(current.type==='enter')event.textContent=`↳ Pushed frame @${current.nodeId}`;
+  else if(current.type==='print')event.textContent=`↳ Printed ${readable(current.printed.at(-1)?.token??'')}`;
+  else if(current.type==='left'||current.type==='right')event.textContent=current.description;
+  else event.textContent='Step through the recursion to see frames enter and return.';
+}
+
+function renderTrace(){
+  $('execution-grid').hidden=!state.traceExpanded;
+  $('trace-details').setAttribute('aria-expanded',String(state.traceExpanded));
+  $('trace-details').textContent=state.traceExpanded?'Hide details':'Show details';
+  const enabled=isReady();
+  const all=enabled?steps():[];
+  state.step=clamp(state.step,0,Math.max(0,all.length-1));
+  const current=all[state.step]??{type:'ready',nodeId:null,stack:[],printed:[],description:'Finish the expression to enable execution tracing.',line:null};
+  state.traceNodeId=current.nodeId;
+  state.tracePath=new Set(current.stack.map(f=>f.nodeId));
+  for(const el of document.querySelectorAll('[data-order]')){el.classList.toggle('active',el.dataset.order===state.order);el.setAttribute('aria-pressed',String(el.dataset.order===state.order));}
+  $('step-count').textContent=enabled?`${state.step} / ${all.length-1}`:'— / —';
+  $('trace-range').max=String(Math.max(0,all.length-1));$('trace-range').value=String(state.step);$('trace-range').disabled=!enabled;
+  $('trace-caption').textContent=current.description;
+  $('trace-play').innerHTML=state.timer?'Ⅱ <span>Pause</span>':'▶ <span>Play</span>';
+  $('trace-play').disabled=!enabled||state.step===all.length-1;
+  $('trace-first').disabled=!enabled||state.step===0;$('trace-prev').disabled=!enabled||state.step===0;
+  $('trace-next').disabled=!enabled||state.step===all.length-1;$('trace-last').disabled=!enabled||state.step===all.length-1;
+  $('source-code').innerHTML=sourceLines[state.order].map((line,i)=>`<span class="code-line ${current.line===i+1?'on':''}"><span class="ln">${i+1}</span>${escapeHTML(line)}</span>`).join('');
+  $('stack-depth').textContent=String(current.stack.length).padStart(2,'0');
+  renderStack(current);
+  $('output-count').textContent=`${current.printed.length} TOKENS`;
+  $('output-tokens').innerHTML=current.printed.map(x=>`<span class="output-token">${escapeHTML(readable(x.token))}</span>`).join('');
+}
+function render(){renderInput();renderTrace();renderScene();renderValue();renderInspector();renderChange();$('undo').disabled=state.index===0&&isReady();$('redo').disabled=state.index>=state.history.length-1;}
+function gotoStep(i){if(!isReady())return;pause();state.step=clamp(i,0,steps().length-1);state.traceExpanded=true;render();}
+function play(){
+  if(!isReady())return;
+  state.traceExpanded=true;
+  if(state.timer){pause();render();return;}
+  const total=steps().length;
+  if(state.step>=total-1)return;
+  state.timer=setInterval(()=>{if(state.step>=total-1){pause();render();return;}state.step++;render();if(state.step>=total-1){pause();render();}},460);
+  render();
+}
+function wire(){
+  $('trace-details').addEventListener('click',()=>{state.traceExpanded=!state.traceExpanded;render();});
+  $('diff-toggle').addEventListener('click',()=>{if(semanticPrevious()){state.diffVisible=!state.diffVisible;render();}});
+  $('node-edit-value').addEventListener('input',e=>applyNodeEdit(e.target.value));
+  $('node-edit-operator').addEventListener('change',e=>applyNodeEdit(e.target.value));
+  $('node-edit-done').addEventListener('click',()=>{
+    const s=state.nodeEdit;if(!s)return;
+    if(s.kind==='number'&&!applyNodeEdit($('node-edit-value').value))return;
+    closeNodeEditor(true);
+  });
+  $('node-edit-cancel').addEventListener('click',()=>closeNodeEditor(false));
+  $('node-editor').addEventListener('keydown',e=>{
+    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeNodeEditor(false);}
+    else if(e.key==='Enter'){e.preventDefault();e.stopPropagation();$('node-edit-done').click();}
+  });
+  // Pointer capture re-targets synthesized click/dblclick to the wrapper.
+  // Hit-test in SVG coordinates to make double-click editing reliable.
+  $('scene-wrapper').addEventListener('dblclick',e=>{
+    if(e.target.closest?.('.scene-tools,.node-editor'))return;
+    const point=eventScenePosition(e);
+    let closest=null,distance=Infinity;
+    for(const [id,pos] of state.visualPositions){
+      const d=Math.hypot(pos.x-point.x,pos.y-point.y);
+      if(d<distance){closest=id;distance=d;}
+    }
+    if(isReady()&&closest&&distance<40){e.preventDefault();openNodeEditor(closest);}
+  });
+  $('expression-input').addEventListener('input',changeInput);
+  $('expression-input').addEventListener('blur',()=>{if(state.draft)finishEditing();});
+  $('expression-input').addEventListener('keydown',e=>{
+    if(e.key==='Escape'){reconcileInput();render();e.target.blur();}
+    else if(e.key==='Enter'){
+      if(isReady()){reconcileInput();render();e.target.blur();}
+      else toast('Complete the expression before applying.');
+    }
+  });
+  const sel=$('example-picker');sel.add(new Option('Custom expression','custom'));
+  sel.addEventListener('change',e=>{if(e.target.value!=='custom')loadExample(e.target.value);});
+  $('reset-all').addEventListener('click',resetAll);
+  $('undo').addEventListener('click',()=>updateHistory(-1));$('redo').addEventListener('click',()=>updateHistory(1));
+  $('fit-camera').addEventListener('click',fitCamera);
+  $('zoom-in').addEventListener('click',()=>zoom(1.22));$('zoom-out').addEventListener('click',()=>zoom(1/1.22));$('reset-camera').addEventListener('click',resetCamera);
+  const wrap=$('scene-wrapper');
+  wrap.addEventListener('pointerdown',onSceneDown);wrap.addEventListener('pointermove',onSceneMove);wrap.addEventListener('pointerup',onSceneUp);wrap.addEventListener('pointercancel',onSceneCancel);wrap.addEventListener('lostpointercapture',onSceneCancel);
+  wrap.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.1:1/1.1);},{passive:false});
+  wrap.addEventListener('keydown',e=>{
+    const key=e.key;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','0','f','F','+','-','='].includes(key)){
+      e.preventDefault();if(key==='0')resetCamera();else if(key.toLowerCase()==='f')fitCamera();else if(key==='+'||key==='=')zoom(1.2);else if(key==='-')zoom(1/1.2);
+      else cameraOrbit((key==='ArrowLeft'?-1:key==='ArrowRight'?1:0)*25,(key==='ArrowUp'?-1:key==='ArrowDown'?1:0)*25);
+    }
+  });
+  $('scene').addEventListener('keydown',e=>{
+    if((e.key==='Enter'||e.key===' ')&&e.target.closest?.('[data-node]')){
+      e.preventDefault();const id=e.target.closest('[data-node]').getAttribute('data-node');if(isReady()&&findNode(root(),id)){state.selectedId=id;render();}
+    }
+  });
+  document.querySelectorAll('[data-order]').forEach(el=>el.addEventListener('click',()=>{pause();state.order=el.dataset.order;state.step=0;render();}));
+  $('trace-first').addEventListener('click',()=>gotoStep(0));$('trace-prev').addEventListener('click',()=>gotoStep(state.step-1));$('trace-play').addEventListener('click',play);$('trace-next').addEventListener('click',()=>gotoStep(state.step+1));$('trace-last').addEventListener('click',()=>gotoStep(steps().length-1));
+  $('trace-range').addEventListener('input',e=>gotoStep(Number(e.target.value)));
+  $('stack-frames').addEventListener('click',e=>{const el=e.target.closest('[data-frame]');if(el&&findNode(root(),el.dataset.frame)){state.selectedId=el.dataset.frame;render();}});
+  document.addEventListener('keydown',e=>{
+    if((e.metaKey||e.ctrlKey)&&!e.altKey&&e.key.toLowerCase()==='z'){
+      e.preventDefault();updateHistory(e.shiftKey?1:-1);
+    }
+    if((e.metaKey||e.ctrlKey)&&!e.altKey&&e.key.toLowerCase()==='y'){
+      e.preventDefault();updateHistory(1);
+    }
+  });
+}
+wire();render();
+window.__ETS_DEBUG__={getState:()=>({index:state.index,historyCount:state.history.length,expression:safeInfix(root()),inputStatus:state.input.status,ghostId:state.input.ghostId,selectedId:state.selectedId,editingNode:state.nodeEdit?.id||null,order:state.order,step:state.step,traceLength:steps().length,camera:{...state.camera},traceExpanded:state.traceExpanded,diffVisible:state.diffVisible,semanticAvailable:!!semanticPrevious(),stackPhase:$('stack-phase').textContent,projectedCount:state.projected.size,morphActive:!!state.morphFrame,positions:[...state.visualPositions].map(([id,p])=>({id,x:p.x,y:p.y})),targets:[...state.projected].map(([id,p])=>({id,x:p.x,y:p.y}))}),resetCamera,fitCamera,zoom,orbit:cameraOrbit};
+
+</script>
+</body></html>
